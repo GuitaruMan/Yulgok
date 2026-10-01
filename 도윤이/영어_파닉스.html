@@ -247,6 +247,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 <div id="app"></div>
 <div id="fx"></div>
 <script src="../progress.js"></script>
+<script src="../cross.js"></script>
 <script>
 "use strict";
 const AUD = "../태연이/영어_파닉스/audio/";   // 녹음은 태연이 페이지 것을 같이 쓴다
@@ -402,7 +403,6 @@ const STAGES = [
   { id: "s1", no: "STAGE 1", name: "알파벳 파닉스", en: "Letter Land", icon: "🔤", c: "#FF7A45", cl: "#FFF1EA", cd: "#C24A17", desc: "글자를 보고, 소리를 듣고, 게임으로 익혀요!", acts: [
     { id: "s1a", title: "글자 카드", kind: "학습", e: "🃏", d: "카드를 누르면 단어 소리가 나와요", steps: [{ type: "lcards", guide: "카드를 눌러 소리를 듣고 <b>따라 말해요</b>. 오른쪽 위 글자가 첫소리 힌트예요." }] },
     { id: "s1b", title: "첫소리 찾기", kind: "게임", e: "👂", d: "단어를 듣고 첫 글자 고르기", steps: [{ type: "listen", gen: firstSound, guide: "🔊 소리를 듣고, 단어의 <b>첫 글자</b>를 골라요." }] },
-    { id: "s1c", title: "짝 맞추기", kind: "게임", e: "🎴", d: "글자 카드와 그림 카드 짝 찾기", steps: [{ type: "memory", guide: "카드 두 장을 뒤집어 <b>글자</b>와 <b>그림</b>이 짝이 되면 성공! 적게 뒤집을수록 별이 많아요." }] },
     { id: "s1d", title: "풍선 터뜨리기", kind: "게임", e: "🎈", d: "소리를 듣고 맞는 글자 풍선 터뜨리기", steps: [{ type: "balloon", guide: "🔊 소리를 듣고, <b>첫 글자</b>가 적힌 풍선을 찾아 터뜨려요." }] },
     { id: "s1e", title: "한글 풍선 받기", kind: "게임", e: "🌈", d: "알파벳을 보고 맞는 한글 소리 풍선 터뜨리기", steps: [{ type: "fall", mode: "ko", guide: "아래 <b>알파벳</b>의 소리와 맞는 <b>한글 풍선</b>을 터뜨려요. 10점이면 성공!" }] },
     { id: "s1f", title: "알파벳 풍선 받기", kind: "게임", e: "🔡", d: "한글 소리를 보고 맞는 알파벳 풍선 터뜨리기", steps: [{ type: "fall", mode: "en", guide: "아래 <b>한글 소리</b>와 맞는 <b>알파벳 풍선</b>을 터뜨려요. 10점이면 성공!" }] }
@@ -411,7 +411,8 @@ const STAGES = [
     { id: "s2a", title: "단어 카드", kind: "학습", e: "📖", d: "글자를 하나씩 누르고 단어 소리 듣기", steps: [{ type: "wcards", guide: "글자를 <b>왼쪽부터 하나씩</b> 누르며 소리를 이어 말해요. 다 누르면 단어 소리가 나와요." }] },
     { id: "s2b", title: "듣고 그림 고르기", kind: "게임", e: "🖼️", d: "단어를 듣고 맞는 그림 고르기", steps: [{ type: "listen", gen: pickPic, guide: "🔊 소리를 듣고 맞는 <b>그림</b>을 골라요." }] },
     { id: "s2c", title: "글자 조립", kind: "게임", e: "🔤", d: "그림을 보고 글자를 순서대로 누르기", steps: [{ type: "build", guide: "🔊 소리를 듣고, 글자를 <b>순서대로</b> 눌러 단어를 만들어요." }] },
-    { id: "s2d", title: "빈칸 채우기", kind: "게임", e: "✏️", d: "빠진 글자 하나 찾기", steps: [{ type: "listen", gen: blank, guide: "🔊 소리를 듣고 <b>빈칸</b>에 들어갈 글자를 골라요." }] }
+    { id: "s2d", title: "빈칸 채우기", kind: "게임", e: "✏️", d: "빠진 글자 하나 찾기", steps: [{ type: "listen", gen: blank, guide: "🔊 소리를 듣고 <b>빈칸</b>에 들어갈 글자를 골라요." }] },
+    { id: "s2e", title: "크로스워드", kind: "게임", e: "🧩", d: "그림을 보고 가로세로 칸에 글자 채우기", steps: [{ type: "cross", guide: "위의 <b>그림</b>을 누르면 🔊 소리가 나와요. 아래 글자를 눌러 <b>가로세로 칸</b>을 채워요." }] }
   ] }
 ];
 const ALLACTS = STAGES.flatMap(s => s.acts);
@@ -499,35 +500,14 @@ ENG.listen = (host, cfg, done) => {
   show();
 };
 
-ENG.memory = (host, cfg, done) => {
-  const pick = shuffle(FIRST).slice(0, 6), n = pick.length;
-  const cards = shuffle(pick.flatMap((x, k) => [{ k, x, letter: true }, { k, x }]));
-  let open = [], left = n, tries = 0, lock = false;
-  const tryEl = h("div", { class: "mtry" }, "뒤집은 횟수 0번");
-  const grid = h("div", { class: "mem" });
-  cards.forEach(c => {
-    const b = h("button", { class: "mm", type: "button" }, "?");
-    b.onclick = () => {
-      if (lock || b.classList.contains("up")) return;
-      b.classList.add("up"); if (!c.letter) b.classList.add("pic");
-      b.textContent = c.letter ? c.x.L + " " + c.x.l : c.x.e;
-      if (c.letter) sfx.tap(); else say(c.x.w);
-      open.push({ c, b });
-      if (open.length < 2) return;
-      tries++; tryEl.textContent = `뒤집은 횟수 ${tries}번`;
-      const [a, d] = open;
-      open = [];
-      if (a.c.k === d.c.k) {
-        [a.b, d.b].forEach(x => x.classList.add("ok")); sfx.ok(); left--;
-        if (!left) later(() => done(tries <= n + 5 ? 0 : tries <= n + 10 ? 1 : 99, n), 900);
-      } else {
-        lock = true;
-        later(() => { [a.b, d.b].forEach(x => { x.classList.remove("up", "pic"); x.textContent = "?"; }); lock = false; }, 1200);
-      }
-    };
-    grid.append(b);
-  });
-  host.append(grid, tryEl);
+// 크로스워드: 그림(누르면 소리)을 힌트로 단어를 가로세로 칸에 채운다 (../cross.js)
+ENG.cross = (host, cfg, done) => {
+  const byW = Object.fromEntries(CVC.map(x => [x.w, x]));
+  let L, miss = 0;
+  for (let t = 0; t < 30; t++) { L = CrossPuzzle.layout(shuffle(CVC).slice(0, 7).map(x => x.w), 9, 9); if (L.entries.length >= 5) break; }
+  CrossPuzzle.mount(host, L, { keys: shuffle([...new Set(L.entries.flatMap(e => [...e.word]))]), chip: e => byW[e.word].e,
+    onSelect: e => say(e.word), onTap: sfx.tap, onOk: e => { sfx.ok(); later(() => say(e.word), 250); }, onMiss: () => { miss++; sfx.no(); },
+    onDone: () => later(() => done(miss, L.entries.length), 1000) });
 };
 
 const COLORS = ["#FF6B8A", "#FFB020", "#4CC9F0", "#5CC98A", "#9B5DE5", "#FF7A45", "#F0508A", "#3FA7F5"];

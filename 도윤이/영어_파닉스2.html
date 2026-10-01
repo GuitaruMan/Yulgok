@@ -220,7 +220,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .wg{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
 .tl{width:46px}
 .tl.two{width:64px}
-.mm.up.wordc{font-size:1.8rem}
 .bl.wb{width:150px;height:92px;border-radius:46px;font-size:1.9rem}
 @media (max-width:600px){.map{grid-template-columns:1fr}}
 
@@ -259,6 +258,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 <div id="app"></div>
 <div id="fx"></div>
 <script src="../progress.js"></script>
+<script src="../cross.js"></script>
 <script>
 "use strict";
 const AUD = "../태연이/영어_파닉스/audio/";
@@ -386,19 +386,18 @@ const wordOpt = o => `<span class="lt">${o.w}</span><small>${hintOf(o.w)}</small
 const listenWord = s => () => shuffle(WORDS[s]).slice(0, 10).map(x => ({ say: x.w, auto: true, cols: 2, opts: [x].concat(near(x, WORDS[s], 3)).map(wordOpt) }));
 const readPic = s => () => shuffle(WORDS[s]).slice(0, 10).map(x => ({ say: x.w, word: x.w, hint: hintOf(x.w), pic: true, cols: 4, opts: [x].concat(near(x, WORDS[s], 3)).map(o => o.e) }));
 
-const acts = (s, last) => [
+const acts = s => [
   { id: `s${s + 1}a`, title: "단어 카드", kind: "학습", e: "📖", d: "글자를 하나씩 누르고 단어 소리 듣기", steps: [{ type: "wcards", set: s, guide: "글자를 <b>왼쪽부터 하나씩</b> 누르며 소리를 이어 말해요. 다 누르면 단어 소리가 나와요." }] },
   { id: `s${s + 1}b`, title: "듣고 단어 고르기", kind: "게임", e: "👂", d: "소리를 듣고 맞는 단어 고르기", steps: [{ type: "pick", gen: listenWord(s), guide: "🔊 소리를 듣고 맞는 <b>단어</b>를 골라요. 틀리면 한글 힌트가 나와요." }] },
   { id: `s${s + 1}c`, title: "읽고 그림 고르기", kind: "게임", e: "🖼️", d: "단어를 혼자 읽고 맞는 그림 고르기", steps: [{ type: "pick", gen: readPic(s), guide: "단어를 <b>혼자 읽고</b> 맞는 그림을 골라요. 맞히면 소리가 나와요." }] },
   { id: `s${s + 1}d`, title: "글자 조립", kind: "게임", e: "🔤", d: "함정 글자를 피해 순서대로 누르기", steps: [{ type: "build", set: s, guide: "🔊 소리를 듣고, 글자를 <b>순서대로</b> 눌러요. 쓰지 않는 <b>함정 글자</b>도 있어요!" }] },
-  last === "memory"
-    ? { id: `s${s + 1}e`, title: "카드 뒤집기", kind: "게임", e: "🎴", d: "단어 카드와 그림 카드 짝 찾기", steps: [{ type: "memory", set: s, guide: "카드 두 장을 뒤집어 <b>단어</b>와 <b>그림</b>이 짝이 되면 성공! 적게 뒤집을수록 별이 많아요." }] }
-    : { id: `s${s + 1}e`, title: "단어 풍선 받기", kind: "게임", e: "🎈", d: "그림을 보고 맞는 단어 풍선 터뜨리기", steps: [{ type: "fall", set: s, guide: "아래 <b>그림</b>에 맞는 <b>단어 풍선</b>을 터뜨려요. 10점이면 성공!" }] }
-];
+  s !== 1 && { id: `s${s + 1}e`, title: "단어 풍선 받기", kind: "게임", e: "🎈", d: "그림을 보고 맞는 단어 풍선 터뜨리기", steps: [{ type: "fall", set: s, guide: "아래 <b>그림</b>에 맞는 <b>단어 풍선</b>을 터뜨려요. 10점이면 성공!" }] },
+  { id: `s${s + 1}x`, title: "크로스워드", kind: "게임", e: "🧩", d: "그림을 보고 가로세로 칸에 글자 채우기", steps: [{ type: "cross", set: s, guide: "위의 <b>그림</b>을 누르면 🔊 소리가 나와요. 아래 글자를 눌러 <b>가로세로 칸</b>을 채워요." }] }
+].filter(Boolean);
 const STAGES = [
-  { id: "s1", no: "STAGE 1", name: "세 글자 단어", en: "Word Runner", icon: "🏃", c: "#FF7A45", cl: "#FFF1EA", cd: "#C24A17", desc: "새 단어 25개를 소리대로 읽어요!", acts: acts(0, "fall") },
-  { id: "s2", no: "STAGE 2", name: "두 글자 한 소리", en: "Sound Teams", icon: "🤝", c: "#12A594", cl: "#E5F7F4", cd: "#0A7568", desc: "sh · ch · th · ck · ng 는 둘이서 한 소리!", acts: acts(1, "memory") },
-  { id: "s3", no: "STAGE 3", name: "긴 단어", en: "Big Words", icon: "🚀", c: "#9B5DE5", cl: "#F4ECFD", cd: "#6A2FB3", desc: "자음이 둘 이어지는 네다섯 글자 단어!", acts: acts(2, "fall") }
+  { id: "s1", no: "STAGE 1", name: "세 글자 단어", en: "Word Runner", icon: "🏃", c: "#FF7A45", cl: "#FFF1EA", cd: "#C24A17", desc: "새 단어 25개를 소리대로 읽어요!", acts: acts(0) },
+  { id: "s2", no: "STAGE 2", name: "두 글자 한 소리", en: "Sound Teams", icon: "🤝", c: "#12A594", cl: "#E5F7F4", cd: "#0A7568", desc: "sh · ch · th · ck · ng 는 둘이서 한 소리!", acts: acts(1) },
+  { id: "s3", no: "STAGE 3", name: "긴 단어", en: "Big Words", icon: "🚀", c: "#9B5DE5", cl: "#F4ECFD", cd: "#6A2FB3", desc: "자음이 둘 이어지는 네다섯 글자 단어!", acts: acts(2) }
 ];
 const ALLACTS = STAGES.flatMap(s => s.acts);
 const MAXSTARS = ALLACTS.length * 3;
@@ -503,36 +502,14 @@ ENG.build = (host, cfg, done) => {
   show();
 };
 
-ENG.memory = (host, cfg, done) => {
-  const pickd = shuffle(WORDS[cfg.set]).slice(0, 6), n = pickd.length;
-  const cards = shuffle(pickd.flatMap((x, k) => [{ k, x, word: true }, { k, x }]));
-  let open = [], left = n, tries = 0, lock = false;
-  const tryEl = h("div", { class: "mtry" }, "뒤집은 횟수 0번");
-  const grid = h("div", { class: "mem" });
-  cards.forEach(c => {
-    const b = h("button", { class: "mm", type: "button" }, "?");
-    b.onclick = () => {
-      if (lock || b.classList.contains("up")) return;
-      b.classList.add("up", c.word ? "wordc" : "pic");
-      b.textContent = c.word ? c.x.w : c.x.e;
-      sfx.tap();
-      open.push({ c, b });
-      if (open.length < 2) return;
-      tries++; tryEl.textContent = `뒤집은 횟수 ${tries}번`;
-      const [a, d] = open;
-      open = [];
-      if (a.c.k === d.c.k) {
-        [a.b, d.b].forEach(x => x.classList.add("ok")); sfx.ok(); left--;
-        later(() => say(a.c.x.w), 250);
-        if (!left) later(() => done(tries <= n + 5 ? 0 : tries <= n + 10 ? 1 : 99, n), 1300);
-      } else {
-        lock = true;
-        later(() => { [a.b, d.b].forEach(x => { x.classList.remove("up", "pic", "wordc"); x.textContent = "?"; }); lock = false; }, 1200);
-      }
-    };
-    grid.append(b);
-  });
-  host.append(grid, tryEl);
+// 크로스워드: 그림(누르면 소리)을 힌트로 단어를 가로세로 칸에 채운다 (../cross.js)
+ENG.cross = (host, cfg, done) => {
+  const byW = Object.fromEntries(ALLW.map(x => [x.w, x]));
+  let L, miss = 0;
+  for (let t = 0; t < 30; t++) { L = CrossPuzzle.layout(shuffle(WORDS[cfg.set]).slice(0, 7).map(x => x.w), 10, 10); if (L.entries.length >= 5) break; }
+  CrossPuzzle.mount(host, L, { size: 48, keys: shuffle([...new Set(L.entries.flatMap(e => [...e.word]))]), chip: e => byW[e.word].e,
+    onSelect: e => say(e.word), onTap: sfx.tap, onOk: e => { sfx.ok(); later(() => say(e.word), 250); }, onMiss: () => { miss++; sfx.no(); },
+    onDone: () => later(() => done(miss, L.entries.length), 1000) });
 };
 
 // 내려오는 단어 풍선: 아래 그림에 맞는 단어를 터뜨린다. 정답 풍선은 화면에 하나만, 하나 맞히면 다음 그림.

@@ -255,7 +255,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .pc{height:92px;border-radius:18px;background:#fff;border:3px solid var(--gr);box-shadow:0 5px 0 var(--gr);font:600 2.6rem 'Fredoka'}
 .pc.sel{border-color:var(--c);background:var(--cl);box-shadow:0 5px 0 var(--c)}
 .pc.ok{border-color:var(--ok);background:var(--okl);box-shadow:0 5px 0 var(--ok);color:#14703d}
-.mm.up.eqc{font-size:1.7rem}
 @media (max-width:600px){.map{grid-template-columns:1fr}.vc{grid-template-columns:repeat(3,54px);font-size:2.6rem}.eq{font-size:2.6rem}.opts{gap:8px}.opt .lt{font-size:2rem}}
 
 /* result */
@@ -293,6 +292,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 <div id="app"></div>
 <div id="fx"></div>
 <script src="../progress.js"></script>
+<script src="../cross.js"></script>
 <script>
 "use strict";
 
@@ -499,30 +499,30 @@ const A = {
   pick: (id, gen, title = "답 고르기", d = "식을 보고 맞는 답 고르기") => ({ id, title, kind: "게임", e: "🎯", d, steps: [{ type: "pick", gen, guide: "식을 계산하고 맞는 <b>답</b>을 골라요." }] }),
   column: (id, gen) => ({ id, title: "세로셈 쓰기", kind: "연습", e: "✏️", d: "일의 자리부터 숫자를 눌러 답 쓰기", steps: [{ type: "column", gen, guide: "<b>일의 자리부터</b> 숫자를 눌러 답을 써요. 틀리면 힌트가 나와요." }] }),
   story: (id, gen) => ({ id, title: "이야기 문제", kind: "연습", e: "📖", d: "이야기를 읽고 식을 세워 답 구하기", steps: [{ type: "story", gen: GEN.story(gen), guide: "이야기를 읽고 <b>알맞은 식</b>을 고른 다음, <b>답</b>을 골라요." }] }),
+  cross: (id, gen) => ({ id, title: "가로세로 수 퍼즐", kind: "게임", e: "🧩", d: "식을 계산해서 가로세로 칸에 숫자 채우기", steps: [{ type: "cross", gen, guide: "위의 <b>식</b>을 계산해서 칸에 답을 써요. ➡는 가로, ⬇는 세로! 겹치는 칸의 숫자는 같아요." }] }),
   pair: (id, gen, minus) => ({ id, title: minus ? "차 만들기" : "수 만들기", kind: "게임", e: "🃏", d: `카드 두 장을 골라 ${minus ? "빼서" : "더해서"} 목표 수 만들기`,
     steps: [{ type: "pair", gen: GEN.pair(gen, minus), guide: `${minus ? "큰 수에서 작은 수를 <b>빼서</b>" : "<b>더해서</b>"} <b>목표 수</b>가 되는 카드 <b>두 장</b>을 골라요. 딱 한 쌍만 있어요!` }] }),
   input: (id, gen, title, d, e, n) => ({ id, title, kind: "연습", e, d, steps: [{ type: "input", gen, n, guide: "계산해서 답을 <b>숫자판으로 직접</b> 쓰고 ‘확인’을 눌러요. 틀리면 힌트가 나와요." }] }),
   box: (id, gen) => ({ id, title: "□ 찾기", kind: "연습", e: "🔍", d: "□ 안에 들어갈 수 찾기", steps: [{ type: "pick", gen: GEN.box(gen), guide: "<b>□</b> 안에 들어갈 수를 골라요." }] }),
-  memory: (id, gen) => ({ id, title: "짝 맞추기", kind: "게임", e: "🎴", d: "식 카드와 답 카드 짝 찾기", steps: [{ type: "memory", gen, guide: "카드 두 장을 뒤집어 <b>식</b>과 <b>답</b>이 짝이 되면 성공! 적게 뒤집을수록 별이 많아요." }] })
 };
 const GREEN = { c: "#1FA971", cl: "#E6F7EF", cd: "#127A50" }, ORANGE = { c: "#FF7A45", cl: "#FFF1EA", cd: "#C24A17" },
   PURPLE = { c: "#7C5CFC", cl: "#F2EEFF", cd: "#5034C4" }, BLUE = { c: "#2E8BF0", cl: "#E8F3FF", cd: "#1A5FB0" };
 // 활동 id는 별 기록의 이름이라 한번 정하면 바꾸지 않는다 (없앤 활동의 id도 다시 쓰지 않는다).
 const STAGES = LEVEL === "A" ? [
   { id: "s1", no: "STAGE 1", name: "더하기", en: "Plus Land", icon: "➕", ...GREEN, desc: "두 자리 수 더하기 (받아올림 없이)", acts: [
-    A.learn("s2a", [mk(23, 45, "+"), mk(52, 6, "+"), mk(34, 25, "+")]), A.pick("s2b", GEN.add), A.column("s2c", GEN.add), A.story("s2d", GEN.add), A.memory("s2f", GEN.add)] },
+    A.learn("s2a", [mk(23, 45, "+"), mk(52, 6, "+"), mk(34, 25, "+")]), A.pick("s2b", GEN.add), A.column("s2c", GEN.add), A.story("s2d", GEN.add), A.cross("s2x", GEN.add)] },
   { id: "s2", no: "STAGE 2", name: "빼기", en: "Minus Land", icon: "➖", ...ORANGE, desc: "두 자리 수 빼기 (받아내림 없이)", acts: [
-    A.learn("s3a", [mk(57, 23, "−"), mk(48, 5, "−"), mk(69, 36, "−")]), A.pick("s3b", GEN.sub), A.column("s3c", GEN.sub), A.story("s3d", GEN.sub), A.memory("s3f", GEN.sub)] },
+    A.learn("s3a", [mk(57, 23, "−"), mk(48, 5, "−"), mk(69, 36, "−")]), A.pick("s3b", GEN.sub), A.column("s3c", GEN.sub), A.story("s3d", GEN.sub), A.cross("s3x", GEN.sub)] },
   { id: "s3", no: "STAGE 3", name: "섞어 풀기", en: "Mix Master", icon: "🚀", ...PURPLE, desc: "더하기와 빼기가 섞여 나와요. 기호를 잘 봐요!", acts: [
-    A.pick("s4a", GEN.mix), A.story("s4b", GEN.mix), A.box("s4c", GEN.mix), A.pair("s4f", GEN.add), A.memory("s4d", GEN.mix)] }
+    A.pick("s4a", GEN.mix), A.story("s4b", GEN.mix), A.box("s4c", GEN.mix), A.pair("s4f", GEN.add), A.cross("s4x", GEN.mix)] }
 ] : [
   { id: "s1", no: "STAGE 1", name: "올리고 빌리기", en: "Regroup", icon: "🔟", ...ORANGE, desc: "받아올림·받아내림이 있는 두 자리 수 계산", acts: [
     A.learn("r1a", [mk(27, 15, "+"), mk(48, 6, "+"), mk(42, 17, "−"), mk(63, 8, "−")]), A.column("r1b", GEN.mixC),
-    A.input("r1c", GEN.mixC, "답 직접 쓰기", "보기 없이 계산해서 답을 숫자로 쓰기", "✍️"), A.story("r1d", GEN.mixC), A.memory("r1f", GEN.mixC)] },
+    A.input("r1c", GEN.mixC, "답 직접 쓰기", "보기 없이 계산해서 답을 숫자로 쓰기", "✍️"), A.story("r1d", GEN.mixC), A.cross("r1x", GEN.mixC)] },
   { id: "s2", no: "STAGE 2", name: "세 수 계산", en: "Triple Step", icon: "🧮", ...GREEN, desc: "세 수를 앞에서부터 차례로 · □ 찾기 · 크기 비교", acts: [
     { id: "r2a", title: "세 수 계산 배우기", kind: "학습", e: "📘", d: "앞에서부터 두 번에 나누어 계산하기", steps: [{ type: "learnChain", examples: [chainOf(27, "+", 15, "−", 8), chainOf(52, "−", 17, "+", 26)], guide: "‘다음’을 누르며 <b>앞에서부터 차례로</b> 계산하는 방법을 봐요." }] },
     A.input("r2b", GEN.chain, "세 수 계산", "27 + 15 − 8 같은 식을 계산해서 답 쓰기", "🧮"), A.box("r2c", GEN.mixC),
-    { id: "r2d", title: "크기 비교", kind: "연습", e: "⚖️", d: "양쪽을 계산해서 > = < 고르기", steps: [{ type: "cmp", guide: "양쪽을 계산해서 <b>○</b> 안에 알맞은 <b>&gt; = &lt;</b> 를 골라요." }] }] },
+    { id: "r2d", title: "크기 비교", kind: "연습", e: "⚖️", d: "양쪽을 계산해서 > = < 고르기", steps: [{ type: "cmp", guide: "양쪽을 계산해서 <b>○</b> 안에 알맞은 <b>&gt; = &lt;</b> 를 골라요." }] }, A.cross("r2x", GEN.chain)] },
   { id: "s3", no: "STAGE 3", name: "생각 문제", en: "Think Big", icon: "🚀", ...PURPLE, desc: "두 단계 이야기 · 규칙 찾기 · 수 만들기 · 차 만들기", acts: [
     A.input("r3a", GEN.story2, "두 단계 이야기 문제", "이야기를 읽고 식을 세워 답 쓰기", "📖", 6),
     { id: "r3b", title: "규칙 찾기", kind: "연습", e: "🔍", d: "수가 늘어놓인 규칙을 찾아 □ 채우기", steps: [{ type: "pick", gen: GEN.seq, guide: "수가 <b>얼마씩</b> 커지거나 작아지는지 찾아 <b>□</b> 에 들어갈 수를 골라요." }] },
@@ -796,34 +796,20 @@ ENG.column = (host, cfg, done) => {
   show();
 };
 
-ENG.memory = (host, cfg, done) => {
-  const pickd = many(cfg.gen, 6, true), n = pickd.length;
-  const cards = shuffle(pickd.flatMap((x, k) => [{ k, t: x.text, eq: true }, { k, t: x.ans }]));
-  let open = [], left = n, tries = 0, lock = false;
-  const tryEl = h("div", { class: "mtry" }, "뒤집은 횟수 0번");
-  const grid = h("div", { class: "mem" });
-  cards.forEach(c => {
-    const b = h("button", { class: "mm", type: "button" }, "?");
-    b.onclick = () => {
-      if (lock || b.classList.contains("up")) return;
-      b.classList.add("up"); if (c.eq) b.classList.add("eqc");
-      b.textContent = c.t; sfx.tap();
-      open.push({ c, b });
-      if (open.length < 2) return;
-      tries++; tryEl.textContent = `뒤집은 횟수 ${tries}번`;
-      const [a, d] = open;
-      open = [];
-      if (a.c.k === d.c.k) {
-        [a.b, d.b].forEach(x => x.classList.add("ok")); sfx.ok(); left--;
-        if (!left) later(() => done(tries <= n + 5 ? 0 : tries <= n + 10 ? 1 : 99, n), 900);
-      } else {
-        lock = true;
-        later(() => { [a.b, d.b].forEach(x => { x.classList.remove("up", "eqc"); x.textContent = "?"; }); lock = false; }, 1400);
-      }
-    };
-    grid.append(b);
-  });
-  host.append(grid, tryEl);
+// 가로세로 수 퍼즐: 두 자리 수 답들이 계단 모양으로 이어진다 (앞 답의 일의 자리 = 다음 답의 십의 자리). ../cross.js
+ENG.cross = (host, cfg, done) => {
+  const probFor = n => { for (let k = 0; k < 4000; k++) { const p = cfg.gen(); if (p.ans === n) return p; } return null; };
+  let probs = null, miss = 0;
+  while (!probs) {                                      // 답이 될 숫자 7개를 정하고, 그 답이 나오는 식을 찾는다
+    const d = Array.from({ length: 7 }, () => rnd(1, 9));
+    const ps = d.slice(0, 6).map((x, i) => probFor(x * 10 + d[i + 1]));
+    if (ps.every(Boolean) && new Set(ps.map(p => p.text)).size === 6) probs = ps;
+  }
+  const L = CrossPuzzle.stair(probs.map(p => String(p.ans)));
+  const byW = {};
+  L.entries.forEach((e, i) => { byW[e.num + e.d] = probs.find(p => String(p.ans) === e.word && !Object.values(byW).includes(p)); });
+  CrossPuzzle.mount(host, L, { size: 60, keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"], chip: e => byW[e.num + e.d].text,
+    onTap: sfx.tap, onOk: sfx.ok, onMiss: () => { miss++; sfx.no(); }, onDone: () => later(() => done(miss, L.entries.length), 1000) });
 };
 
 /* ================= screens ================= */
