@@ -330,7 +330,7 @@ const later = (fn, ms) => { const r = RUN; setTimeout(() => { if (r === RUN) fn(
 const KEY = "doyun-math1-v1";
 const S = { stars: {}, sound: true };
 // 기기 + 서버 저장 (../progress.js). 다른 기기에서 별이 늘었으면 게임 중이 아닐 때만 다시 그린다.
-const SYNC = KidsProgress("doyun-math1", KEY, S, () => { if (!location.hash.includes("/")) render(); });
+const SYNC = KidsProgress("doyun-math1", KEY, S, () => { if (!location.hash.includes("/")) render(); }, () => totalStars() + "/" + MAXSTARS);
 function save() { SYNC.save(); }
 let RUN = 0;
 

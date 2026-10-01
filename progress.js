@@ -1,8 +1,10 @@
 /* 아이 학습 페이지 별 기록 저장 — 기기(localStorage) + 서버(Cloudflare kids-progress)
    설계: GuitaruMan/PersonalPages 저장소의 kids-progress-worker/DESIGN.md (이 파일은 그 home/progress.js의 사본)
-   사용: const P = KidsProgress("서버 이름표", "기기 저장 키", S, 서버에서 기록이 바뀌었을 때 할 일);
+   사용: const P = KidsProgress("서버 이름표", "기기 저장 키", S, 서버에서 기록이 바뀌었을 때 할 일, 요약 만드는 함수);
          P.save()  — 별·기록이 바뀔 때마다 호출
-         P.reset() — 서버 기록까지 지우기 (Promise) */
+         P.reset() — 서버 기록까지 지우기 (Promise)
+         요약 함수는 "딴 별/전체 별" 글자를 돌려준다. notes._sum 에 함께 저장되어 목록 페이지가 타일 아래에 보여 준다.
+         KidsProgress.read("서버 이름표") — 기록 읽기만 (목록 페이지용, Promise) */
 (function () {
   "use strict";
   const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -23,7 +25,7 @@
     };
   }
 
-  window.KidsProgress = function (key, localKey, S, onRemote) {
+  window.KidsProgress = function (key, localKey, S, onRemote, summary) {
     S.stars = S.stars || {}; S.best = S.best || {}; S.notes = S.notes || {}; S.nt = S.nt || {};
     let localOk = true;
     try { Object.assign(S, JSON.parse(localStorage.getItem(localKey) || "{}")); } catch (e) { localOk = false; }
@@ -33,6 +35,13 @@
     let dirty = false, busy = false, again = false, fails = 0, retryTimer = 0, debounce = 0;
     const show = pill();
 
+    function stamp() {                         // 요약이 달라졌으면 고쳐 적고 true
+      if (!summary) return false;
+      let v;
+      try { v = summary(); } catch (e) { return false; }
+      if (S.notes._sum === v) return false;
+      S.notes._sum = v; return true;
+    }
     function writeLocal() {
       try { localStorage.setItem(localKey, JSON.stringify(S)); } catch (e) { localOk = false; }
     }
@@ -61,6 +70,7 @@
         dirty = false; fails = 0; writeLocal();
         if (!first) show("☁️ 저장했어요", "#14703d");
         if (changed && onRemote) onRemote();
+        if (stamp()) save();
       } catch (e) {
         fails++;
         show("⚠️ 인터넷 연결을 확인해요 · 별은 이 기기에 보관 중", "#a52328", true);
@@ -71,6 +81,7 @@
       }
     }
     function save() {
+      stamp();
       for (const k in S.notes) if (S.notes[k] !== lastNotes[k]) S.nt[k] = Date.now();
       lastNotes = Object.assign({}, S.notes);
       dirty = true; writeLocal();
@@ -83,10 +94,12 @@
       if (!r.ok) throw new Error("HTTP " + r.status);
       adopt(await r.json());
       dirty = false; writeLocal();
+      if (stamp()) save();
     }
     window.addEventListener("online", () => { if (dirty || fails) sync(); });
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sync(true); });
     sync(true);
     return { save, reset };
   };
+  window.KidsProgress.read = key => fetch(API + "/p/" + key).then(r => (r.ok ? r.json() : null));
 })();
