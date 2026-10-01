@@ -213,7 +213,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .tgt.ko{font:700 3.2rem/1 'Noto Sans KR'}
 
 /* math */
-.map{grid-template-columns:repeat(4,1fr)}
+.map{grid-template-columns:repeat(3,1fr)}
 .eq{font:600 3.4rem/1.25 'Fredoka';color:var(--ink);margin:6px 0 2px;min-height:1.25em}
 .eq b{color:var(--ok)}
 .eq i{font-style:normal;color:var(--c)}
@@ -244,20 +244,17 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .rod{display:block;width:11px;height:60px;border-radius:3px;background:repeating-linear-gradient(var(--c) 0 5px,rgba(255,255,255,.7) 5px 6px)}
 .ones{display:grid;grid-template-columns:repeat(3,11px);gap:3px;align-content:end}
 .one{display:block;width:11px;height:11px;border-radius:3px;background:var(--gold)}
-.nb.big{min-height:124px;gap:20px;margin:4px 0 6px}
-.nb.big .rod{width:20px;height:120px;border-radius:5px;background:repeating-linear-gradient(var(--c) 0 10.5px,rgba(255,255,255,.7) 10.5px 12px)}
-.nb.big .rods{gap:7px}
-.nb.big .ones{grid-template-columns:repeat(3,22px);gap:5px}
-.nb.big .one{width:22px;height:22px;border-radius:5px}
-.nb.hl-t .ones,.nb.hl-o .rods{opacity:.2}
-.base .nb{min-height:62px}
-.tf{display:grid;grid-template-columns:repeat(5,46px);gap:6px;justify-content:center;margin:10px auto 8px;padding:8px;border:3px solid var(--c);border-radius:16px;width:max-content;background:#fff}
-.tfx{display:flex;gap:6px;justify-content:center;min-height:46px}
-.tf i,.tfx i{display:block;width:46px;height:46px;border-radius:50%;border:3px dashed var(--gr)}
-.tfx i{border-color:transparent}
-.tf i.a,.tfx i.a{background:var(--c);border:3px solid var(--cd)}
-.tf i.b,.tfx i.b{background:var(--gold);border:3px solid #b97f00}
-.tf i.gone,.tfx i.gone{background:var(--nol);border:3px dashed var(--no)}
+.eq.sm{font-size:2.2rem;color:var(--sub);min-height:1.3em}
+.eq.md{font-size:2.6rem}
+.ans{width:150px;height:78px;margin:6px auto 0;border:4px solid var(--c);border-radius:18px;background:var(--cl);font:600 3rem/70px 'Fredoka';text-align:center}
+.ans.ok{border-color:var(--ok);background:var(--okl);color:#14703d}
+.pad.p3{grid-template-columns:repeat(3,1fr);max-width:300px}
+.pad .del{border-color:var(--gr);box-shadow:0 5px 0 var(--gr);font-size:1.6rem}
+.pad .go{background:var(--c);color:#fff;font:400 1.3rem 'Jua'}
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:520px;margin:18px auto 0}
+.pc{height:92px;border-radius:18px;background:#fff;border:3px solid var(--gr);box-shadow:0 5px 0 var(--gr);font:600 2.6rem 'Fredoka'}
+.pc.sel{border-color:var(--c);background:var(--cl);box-shadow:0 5px 0 var(--c)}
+.pc.ok{border-color:var(--ok);background:var(--okl);box-shadow:0 5px 0 var(--ok);color:#14703d}
 .mm.up.eqc{font-size:1.7rem}
 @media (max-width:600px){.map{grid-template-columns:1fr}.vc{grid-template-columns:repeat(3,54px);font-size:2.6rem}.eq{font-size:2.6rem}.opts{gap:8px}.opt .lt{font-size:2rem}}
 
@@ -377,13 +374,18 @@ const sfx = {
 const LEVEL = "A";
 /* ================= content ================= */
 // 초등 1학년 수준의 더하기·빼기. 답은 항상 0~99 (세 자리 수가 되지 않는다).
-// LEVEL "A": 예비 초등(선행) — 십과 낱개, 받아올림·받아내림 없는 두 자리 수 계산
-// LEVEL "B": 1학년(복습+도전) — 두 자리 수 복습, 10 만들어 계산, 받아올림·받아내림(2학년 맛보기)
+// LEVEL "A": 예비 초등(선행) — 받아올림·받아내림 없는 두 자리 수 계산
+// LEVEL "B": 1학년(도전) — 받아올림·받아내림, 세 수 계산, 크기 비교, 두 단계 이야기 문제, 규칙 찾기
 const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const pickOne = a => a[Math.random() * a.length | 0];
 const mk = (a, b, op) => {
   const ans = op === "+" ? a + b : a - b, text = `${a} ${op} ${b}`;
   return { a, b, op, ans, text, q: text + " = <i>?</i>", full: `${text} = <b>${ans}</b>` };
+};
+const chainOf = (a, o1, b, o2, c) => {                  // a ○ b ○ c 를 앞에서부터 차례로
+  const m = o1 === "+" ? a + b : a - b, ans = o2 === "+" ? m + c : m - c, text = `${a} ${o1} ${b} ${o2} ${c}`;
+  return { ans, text, expr: text, parts: [a, o1, b, o2, c], q: text + " = <i>?</i>", full: `${text} = <b>${ans}</b>`, steps: [`${a} ${o1} ${b} = ${m}`, `${m} ${o2} ${c} = ${ans}`],
+    hints: ["<b>앞에서부터 차례로</b> 계산해요", `먼저 <b>${a} ${o1} ${b} = ${m}</b>`] };
 };
 const second = (lo, hi) => Math.random() < .3 ? rnd(lo, 9) : rnd(10, hi);     // 뒤의 수: 열에 셋은 한 자리 수
 const GEN = {
@@ -396,13 +398,46 @@ const GEN = {
   one() { for (;;) { const a = rnd(2, 9), b = rnd(2, 9); if (a + b >= 11) return mk(a, b, "+"); } },                                        // (몇)+(몇)=(십몇)
   teen() { for (;;) { const a = rnd(11, 18), b = rnd(2, 9); if (a % 10 < b && a - b >= 2) return mk(a, b, "−"); } },                        // (십몇)−(몇)=(몇)
   ten() { return Math.random() < .5 ? GEN.one() : GEN.teen(); },
-  three() {                                             // 세 수의 계산: 10이 되는 두 수가 들어 있는 덧셈, 또는 연달아 빼기
-    let text, ans;
-    if (Math.random() < .6) { const a = rnd(1, 9), c = rnd(1, 9); const t = shuffle([a, 10 - a, c]); text = t.join(" + "); ans = 10 + c; }
-    else { const a = rnd(6, 9), b = rnd(1, a - 3), c = rnd(1, a - b - 1); text = `${a} − ${b} − ${c}`; ans = a - b - c; }
-    return { ans, text, q: text + " = <i>?</i>", full: `${text} = <b>${ans}</b>` };
+  chain() {                                             // 두 자리 수가 들어간 세 수의 계산 (중간 값과 답 모두 0~99)
+    for (;;) {
+      const a = rnd(12, 79), b = rnd(6, 48), c = rnd(4, 39), o1 = pickOne(["+", "−"]), o2 = pickOne(["+", "−"]);
+      const m = o1 === "+" ? a + b : a - b, r = o2 === "+" ? m + c : m - c;
+      if (m >= 1 && m <= 99 && r >= 0 && r <= 99) return chainOf(a, o1, b, o2, c);
+    }
   },
-  count() { const n = rnd(11, 99); return { ans: n, n, text: String(n), q: "", full: `<b>${n}</b>`, blocks: true }; },                        // 수 모형 세기
+  cmp() {                                               // 크기 비교: 식과 수, 또는 식과 식
+    const L = GEN.mixC(), R = Math.random() < .5 ? GEN.mixC() : null;
+    const rv = R ? R.ans : Math.min(99, Math.max(0, L.ans + pickOne([-3, -2, -1, 0, 0, 1, 2, 3]))), rt = R ? R.text : String(rv);
+    const ans = L.ans > rv ? ">" : L.ans < rv ? "<" : "=";
+    return { ans, text: `${L.text} ○ ${rt}`, q: `${L.text} <i>○</i> ${rt}`, full: `${L.text} <b>${ans}</b> ${rt}`, note: `${L.ans} ${ans} ${rv}` };
+  },
+  seq() {                                               // 규칙 찾기: 같은 수만큼 커지거나 작아지는 수 5개 중 하나가 □
+    const d = pickOne([3, 4, 5, 6, 7, 8, 9, 11, 12]) * pickOne([1, -1]);
+    const start = d > 0 ? rnd(1, 99 - d * 4) : rnd(-d * 4, 99), arr = [0, 1, 2, 3, 4].map(k => start + d * k), hole = rnd(2, 4);
+    return { ans: arr[hole], text: arr.map((v, k) => k === hole ? "□" : v).join(", "), q: arr.map((v, k) => k === hole ? "<i>□</i>" : v).join(", "),
+      full: arr.map((v, k) => k === hole ? `<b>${v}</b>` : v).join(", ") };
+  },
+  pair(base, minus) {                                   // 카드 6장 중 딱 한 쌍만 더해서(또는 빼서) 목표 수가 된다
+    const hit = (x, y, t) => minus ? Math.abs(x - y) === t : x + y === t;
+    return () => {
+      let p = base();
+      while (p.a === p.b) p = base();                   // 같은 수 카드가 두 장 나오지 않게
+      const cards = [p.a, p.b];
+      for (let k = 0; cards.length < 6 && k < 400; k++) {
+        const n = rnd(3, 95);
+        if (!cards.includes(n) && !cards.some(c => hit(c, n, p.ans))) cards.push(n);
+      }
+      return { ans: p.ans, text: p.text, cards: shuffle(cards), minus };
+    };
+  },
+  story2() {                                            // 두 단계 이야기 문제
+    const p = GEN.chain(), [a, o1, b, o2, c] = p.parts, k = o1 + o2;
+    const s = k === "++" ? ["📚", `책을 월요일에 ${a}쪽, 화요일에 ${b}쪽, 수요일에 ${c}쪽 읽었어요. 사흘 동안 모두 몇 쪽 읽었을까요?`]
+      : k === "+−" ? pickOne([["🍎", `사과가 ${a}개 있었어요. ${b}개를 더 사 왔고, 그중에서 ${c}개를 먹었어요. 남은 사과는 몇 개일까요?`], ["🚌", `버스에 ${a}명이 타고 있었어요. 정류장에서 ${b}명이 타고 ${c}명이 내렸어요. 지금 버스에는 몇 명이 있을까요?`]])
+      : k === "−+" ? pickOne([["⭐", `스티커가 ${a}장 있었어요. 동생에게 ${b}장을 주고, 선생님께 ${c}장을 받았어요. 지금 스티커는 몇 장일까요?`], ["🚌", `버스에 ${a}명이 타고 있었어요. 정류장에서 ${b}명이 내리고 ${c}명이 탔어요. 지금 버스에는 몇 명이 있을까요?`]])
+      : ["🍪", `쿠키가 ${a}개 있었어요. 아침에 ${b}개, 저녁에 ${c}개를 먹었어요. 남은 쿠키는 몇 개일까요?`];
+    return Object.assign(p, { e: s[0], story: s[1], q: "답 = <i>?</i>", text: s[1], hints: [`식을 세워 봐요: <b>${p.expr}</b>`, `먼저 <b>${p.steps[0]}</b>`] });
+  },
   box(base) {                                           // □ 찾기
     return () => {
       const p = base(), first = Math.random() < .5, ans = first ? p.a : p.b, sq = "<i>□</i>", hit = `<b>${ans}</b>`;
@@ -440,14 +475,9 @@ function wrongs(it, n) {                                // 헷갈리기 쉬운 �
   if (it.op === "−" && it.a + it.b <= 99) c.push(it.a + it.b);
   return shuffle([...new Set(c)].filter(x => x >= 0 && x <= 99 && x !== a)).slice(0, n);
 }
-// 숫자 뒤에 붙는 조사 (숫자를 우리말로 읽었을 때의 받침에 맞춘다: 3을·2를, 3과·2와, 3으로·2로, 3이·2가)
+// 숫자 뒤에 붙는 조사 (숫자를 우리말로 읽었을 때의 받침에 맞춘다: 3을·2를)
 const last = n => +String(n).slice(-1);
 const eul = n => "013678".includes(last(n)) ? "을" : "를";
-const gwa = n => "013678".includes(last(n)) ? "과" : "와";
-const ro = n => "036".includes(last(n)) ? "으로" : "로";
-const iga = n => "013678".includes(last(n)) ? "이" : "가";
-const readKo = n => ["", "십", "이십", "삼십", "사십", "오십", "육십", "칠십", "팔십", "구십"][Math.floor(n / 10)] + ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"][n % 10];
-
 function explain(p) {                                   // 자리별 계산 설명
   const a1 = p.a % 10, a10 = Math.floor(p.a / 10), b1 = p.b % 10, b10 = Math.floor(p.b / 10), plus = p.op === "+";
   const carry = plus && a1 + b1 >= 10, borrow = !plus && a1 < b1;
@@ -469,34 +499,34 @@ const A = {
   pick: (id, gen, title = "답 고르기", d = "식을 보고 맞는 답 고르기") => ({ id, title, kind: "게임", e: "🎯", d, steps: [{ type: "pick", gen, guide: "식을 계산하고 맞는 <b>답</b>을 골라요." }] }),
   column: (id, gen) => ({ id, title: "세로셈 쓰기", kind: "연습", e: "✏️", d: "일의 자리부터 숫자를 눌러 답 쓰기", steps: [{ type: "column", gen, guide: "<b>일의 자리부터</b> 숫자를 눌러 답을 써요. 틀리면 힌트가 나와요." }] }),
   story: (id, gen) => ({ id, title: "이야기 문제", kind: "연습", e: "📖", d: "이야기를 읽고 식을 세워 답 구하기", steps: [{ type: "story", gen: GEN.story(gen), guide: "이야기를 읽고 <b>알맞은 식</b>을 고른 다음, <b>답</b>을 골라요." }] }),
-  fall: (id, gen) => ({ id, title: "숫자 풍선 받기", kind: "게임", e: "🎈", d: "아래 식의 답이 적힌 풍선 터뜨리기", steps: [{ type: "fall", gen, guide: "아래 <b>식의 답</b>이 적힌 풍선을 터뜨려요. 10점이면 성공!" }] }),
+  pair: (id, gen, minus) => ({ id, title: minus ? "차 만들기" : "수 만들기", kind: "게임", e: "🃏", d: `카드 두 장을 골라 ${minus ? "빼서" : "더해서"} 목표 수 만들기`,
+    steps: [{ type: "pair", gen: GEN.pair(gen, minus), guide: `${minus ? "큰 수에서 작은 수를 <b>빼서</b>" : "<b>더해서</b>"} <b>목표 수</b>가 되는 카드 <b>두 장</b>을 골라요. 딱 한 쌍만 있어요!` }] }),
+  input: (id, gen, title, d, e, n) => ({ id, title, kind: "연습", e, d, steps: [{ type: "input", gen, n, guide: "계산해서 답을 <b>숫자판으로 직접</b> 쓰고 ‘확인’을 눌러요. 틀리면 힌트가 나와요." }] }),
   box: (id, gen) => ({ id, title: "□ 찾기", kind: "연습", e: "🔍", d: "□ 안에 들어갈 수 찾기", steps: [{ type: "pick", gen: GEN.box(gen), guide: "<b>□</b> 안에 들어갈 수를 골라요." }] }),
   memory: (id, gen) => ({ id, title: "짝 맞추기", kind: "게임", e: "🎴", d: "식 카드와 답 카드 짝 찾기", steps: [{ type: "memory", gen, guide: "카드 두 장을 뒤집어 <b>식</b>과 <b>답</b>이 짝이 되면 성공! 적게 뒤집을수록 별이 많아요." }] })
 };
 const GREEN = { c: "#1FA971", cl: "#E6F7EF", cd: "#127A50" }, ORANGE = { c: "#FF7A45", cl: "#FFF1EA", cd: "#C24A17" },
   PURPLE = { c: "#7C5CFC", cl: "#F2EEFF", cd: "#5034C4" }, BLUE = { c: "#2E8BF0", cl: "#E8F3FF", cd: "#1A5FB0" };
+// 활동 id는 별 기록의 이름이라 한번 정하면 바꾸지 않는다 (없앤 활동의 id도 다시 쓰지 않는다).
 const STAGES = LEVEL === "A" ? [
-  { id: "s1", no: "STAGE 1", name: "수 알기", en: "Number Blocks", icon: "🧱", ...BLUE, desc: "십 막대와 낱개로 두 자리 수와 친해져요", acts: [
-    { id: "s1a", title: "십과 낱개 배우기", kind: "학습", e: "📘", d: "십 막대 몇 개, 낱개 몇 개인지 알아보기", steps: [{ type: "learnTens", examples: [14, 23, 40, 57], guide: "‘다음’을 누르며 <b>십 막대</b>와 <b>낱개</b>로 수를 읽는 방법을 봐요." }] },
-    { id: "s1b", title: "모형 세기", kind: "연습", e: "🔢", d: "수 모형을 보고 수 고르기", steps: [{ type: "pick", gen: GEN.count, guide: "<b>십 막대</b>와 <b>낱개</b>를 세어 맞는 수를 골라요." }] },
-    { id: "s1c", title: "모형 풍선 받기", kind: "게임", e: "🎈", d: "수 모형과 같은 수의 풍선 터뜨리기", steps: [{ type: "fall", gen: GEN.count, guide: "아래 <b>수 모형</b>과 같은 수가 적힌 풍선을 터뜨려요. 10점이면 성공!" }] }] },
-  { id: "s2", no: "STAGE 2", name: "더하기", en: "Plus Land", icon: "➕", ...GREEN, desc: "두 자리 수 더하기 (받아올림 없이)", acts: [
-    A.learn("s2a", [mk(23, 45, "+"), mk(52, 6, "+"), mk(34, 25, "+")]), A.pick("s2b", GEN.add), A.column("s2c", GEN.add), A.story("s2d", GEN.add), A.fall("s2e", GEN.add)] },
-  { id: "s3", no: "STAGE 3", name: "빼기", en: "Minus Land", icon: "➖", ...ORANGE, desc: "두 자리 수 빼기 (받아내림 없이)", acts: [
-    A.learn("s3a", [mk(57, 23, "−"), mk(48, 5, "−"), mk(69, 36, "−")]), A.pick("s3b", GEN.sub), A.column("s3c", GEN.sub), A.story("s3d", GEN.sub), A.fall("s3e", GEN.sub)] },
-  { id: "s4", no: "STAGE 4", name: "섞어 풀기", en: "Mix Master", icon: "🚀", ...PURPLE, desc: "더하기와 빼기가 섞여 나와요. 기호를 잘 봐요!", acts: [
-    A.pick("s4a", GEN.mix), A.story("s4b", GEN.mix), A.box("s4c", GEN.mix), A.memory("s4d", GEN.mix), A.fall("s4e", GEN.mix)] }
+  { id: "s1", no: "STAGE 1", name: "더하기", en: "Plus Land", icon: "➕", ...GREEN, desc: "두 자리 수 더하기 (받아올림 없이)", acts: [
+    A.learn("s2a", [mk(23, 45, "+"), mk(52, 6, "+"), mk(34, 25, "+")]), A.pick("s2b", GEN.add), A.column("s2c", GEN.add), A.story("s2d", GEN.add), A.memory("s2f", GEN.add)] },
+  { id: "s2", no: "STAGE 2", name: "빼기", en: "Minus Land", icon: "➖", ...ORANGE, desc: "두 자리 수 빼기 (받아내림 없이)", acts: [
+    A.learn("s3a", [mk(57, 23, "−"), mk(48, 5, "−"), mk(69, 36, "−")]), A.pick("s3b", GEN.sub), A.column("s3c", GEN.sub), A.story("s3d", GEN.sub), A.memory("s3f", GEN.sub)] },
+  { id: "s3", no: "STAGE 3", name: "섞어 풀기", en: "Mix Master", icon: "🚀", ...PURPLE, desc: "더하기와 빼기가 섞여 나와요. 기호를 잘 봐요!", acts: [
+    A.pick("s4a", GEN.mix), A.story("s4b", GEN.mix), A.box("s4c", GEN.mix), A.pair("s4f", GEN.add), A.memory("s4d", GEN.mix)] }
 ] : [
-  { id: "s1", no: "STAGE 1", name: "복습", en: "Warm Up", icon: "🔁", ...GREEN, desc: "두 자리 수 더하기·빼기 (받아올림·받아내림 없이)", acts: [
-    A.column("s1a", GEN.mix), A.story("s1b", GEN.mix), A.box("s1c", GEN.mix), A.fall("s1d", GEN.mix)] },
-  { id: "s2", no: "STAGE 2", name: "10 만들기", en: "Make Ten", icon: "🔟", ...ORANGE, desc: "10을 만들어 더하고 빼기 · 세 수의 계산", acts: [
-    { id: "s2a", title: "10 만들어 계산하기", kind: "학습", e: "📘", d: "8 + 5 와 13 − 5 를 10을 거쳐 계산하기", steps: [{ type: "learn10", examples: [mk(8, 5, "+"), mk(7, 6, "+"), mk(13, 5, "−"), mk(15, 8, "−")], guide: "‘다음’을 누르며 <b>10을 만들어</b> 계산하는 방법을 봐요." }] },
-    A.pick("s2b", GEN.one, "더해서 십몇", "(몇) + (몇) = (십몇)"), A.pick("s2c", GEN.teen, "십몇에서 빼기", "(십몇) − (몇) = (몇)"),
-    { id: "s2d", title: "세 수의 계산", kind: "연습", e: "🧮", d: "10이 되는 두 수를 먼저 찾아 계산하기", steps: [{ type: "pick", gen: GEN.three, guide: "더하기는 <b>10이 되는 두 수</b>를 먼저 찾으면 쉬워요. 빼기는 앞에서부터 차례로!" }] },
-    A.fall("s2e", GEN.ten), A.memory("s2f", GEN.ten)] },
-  { id: "s3", no: "STAGE 3", name: "도전", en: "Challenge", icon: "🚀", ...PURPLE, desc: "올리고 빌려 오는 두 자리 수 계산 (2학년 맛보기)", acts: [
-    A.learn("s3a", [mk(27, 15, "+"), mk(48, 6, "+"), mk(42, 17, "−"), mk(63, 8, "−")]), A.pick("s3b", GEN.mixC), A.column("s3c", GEN.mixC), A.story("s3d", GEN.mixC),
-    A.box("s3e", GEN.mixC), A.fall("s3f", GEN.mixC)] }
+  { id: "s1", no: "STAGE 1", name: "올리고 빌리기", en: "Regroup", icon: "🔟", ...ORANGE, desc: "받아올림·받아내림이 있는 두 자리 수 계산", acts: [
+    A.learn("r1a", [mk(27, 15, "+"), mk(48, 6, "+"), mk(42, 17, "−"), mk(63, 8, "−")]), A.column("r1b", GEN.mixC),
+    A.input("r1c", GEN.mixC, "답 직접 쓰기", "보기 없이 계산해서 답을 숫자로 쓰기", "✍️"), A.story("r1d", GEN.mixC), A.memory("r1f", GEN.mixC)] },
+  { id: "s2", no: "STAGE 2", name: "세 수 계산", en: "Triple Step", icon: "🧮", ...GREEN, desc: "세 수를 앞에서부터 차례로 · □ 찾기 · 크기 비교", acts: [
+    { id: "r2a", title: "세 수 계산 배우기", kind: "학습", e: "📘", d: "앞에서부터 두 번에 나누어 계산하기", steps: [{ type: "learnChain", examples: [chainOf(27, "+", 15, "−", 8), chainOf(52, "−", 17, "+", 26)], guide: "‘다음’을 누르며 <b>앞에서부터 차례로</b> 계산하는 방법을 봐요." }] },
+    A.input("r2b", GEN.chain, "세 수 계산", "27 + 15 − 8 같은 식을 계산해서 답 쓰기", "🧮"), A.box("r2c", GEN.mixC),
+    { id: "r2d", title: "크기 비교", kind: "연습", e: "⚖️", d: "양쪽을 계산해서 > = < 고르기", steps: [{ type: "cmp", guide: "양쪽을 계산해서 <b>○</b> 안에 알맞은 <b>&gt; = &lt;</b> 를 골라요." }] }] },
+  { id: "s3", no: "STAGE 3", name: "생각 문제", en: "Think Big", icon: "🚀", ...PURPLE, desc: "두 단계 이야기 · 규칙 찾기 · 수 만들기 · 차 만들기", acts: [
+    A.input("r3a", GEN.story2, "두 단계 이야기 문제", "이야기를 읽고 식을 세워 답 쓰기", "📖", 6),
+    { id: "r3b", title: "규칙 찾기", kind: "연습", e: "🔍", d: "수가 늘어놓인 규칙을 찾아 □ 채우기", steps: [{ type: "pick", gen: GEN.seq, guide: "수가 <b>얼마씩</b> 커지거나 작아지는지 찾아 <b>□</b> 에 들어갈 수를 골라요." }] },
+    A.pair("r3c", GEN.addC), A.pair("r3e", GEN.subC, true)] }
 ];
 const ALLACTS = STAGES.flatMap(s => s.acts);
 const MAXSTARS = ALLACTS.length * 3;
@@ -524,7 +554,7 @@ function vcalc(p) {
     regroup(ex) { if (ex.carry) cy.textContent = "1"; if (ex.borrow) { aT.classList.add("x"); cy.textContent = Math.floor(p.a / 10) - 1; } } };   // 올린 1 / 빌려주고 남은 수
 }
 // 수 모형: 십 막대와 낱개
-const blocks = (n, big) => h("div", { class: "nb" + (big ? " big" : "") }, h("div", { class: "rods" }, Array.from({ length: Math.floor(n / 10) }, () => h("i", { class: "rod" }))),
+const blocks = n => h("div", { class: "nb" }, h("div", { class: "rods" }, Array.from({ length: Math.floor(n / 10) }, () => h("i", { class: "rod" }))),
   h("div", { class: "ones" }, Array.from({ length: n % 10 }, () => h("i", { class: "one" }))));
 // ‘다음’을 누르며 한 단계씩 보는 학습 화면
 function stepper(host, examples, done, build) {
@@ -563,44 +593,120 @@ ENG.learn = (host, cfg, done) => stepper(host, cfg.examples, done, (p, stage, ms
   ];
 });
 
-ENG.learnTens = (host, cfg, done) => stepper(host, cfg.examples, done, (n, stage, msg) => {
-  const t = Math.floor(n / 10), o = n % 10, pic = blocks(n, true), num = h("div", { class: "eq" }, "?");
-  stage.append(pic, num);
+// 세 수 계산 배우기: 앞의 두 수 → 그 결과와 셋째 수
+ENG.learnChain = (host, cfg, done) => stepper(host, cfg.examples, done, (p, stage, msg) => {
+  const [a, o1, b, o2, c] = p.parts, eq = h("div", { class: "eq" }), l1 = h("div", { class: "eq sm" }), l2 = h("div", { class: "eq sm" });
+  const bold = t => t.replace(/= (\d+)$/, "= <b>$1</b>");
+  stage.append(h("div", null, eq, l1, l2));
+  eq.innerHTML = p.q;
   return [
-    () => { msg.innerHTML = "수 모형이 있어요. 몇일까요?"; },
-    () => { pic.classList.add("hl-t"); msg.innerHTML = `<b>십 막대</b>가 ${t}개 → <b>${t * 10}</b> (${readKo(t * 10)})`; },
-    () => { pic.classList.remove("hl-t"); pic.classList.add("hl-o"); msg.innerHTML = o ? `<b>낱개</b>가 ${o}개 → <b>${o}</b>` : "<b>낱개</b>는 없어요 → <b>0</b>"; },
-    () => { pic.classList.remove("hl-o"); num.innerHTML = `<b>${n}</b>`; msg.innerHTML = o ? `${t * 10}${gwa(t * 10)} ${o} → <b>${n}</b> (${readKo(n)}) 🎉` : `십 막대만 ${t}개 → <b>${n}</b> (${readKo(n)}) 🎉`; }
+    () => { msg.innerHTML = "수가 세 개여도 걱정 없어요. <b>앞에서부터 차례로</b> 두 번 계산해요!"; },
+    () => { eq.innerHTML = `<i>${a} ${o1} ${b}</i> ${o2} ${c} = ?`; l1.innerHTML = "① " + bold(p.steps[0]); msg.innerHTML = "① 앞의 두 수를 먼저 계산해요"; },
+    () => { l2.innerHTML = "② " + bold(p.steps[1]); msg.innerHTML = "② 그 답과 마지막 수를 계산해요"; },
+    () => { eq.innerHTML = p.full; msg.innerHTML = `<b>${p.text} = ${p.ans}</b> 🎉`; }
   ];
 });
 
-// 10 만들어 계산하기: 10칸 틀에 점을 채우거나 덜어 내며 보여 준다
-ENG.learn10 = (host, cfg, done) => stepper(host, cfg.examples, done, (p, stage, msg) => {
-  const plus = p.op === "+", frame = h("div", { class: "tf" }), extra = h("div", { class: "tfx" }), eq = h("div", { class: "eq", html: p.q });
-  const cells = Array.from({ length: 10 }, () => h("i")), outs = Array.from({ length: 9 }, () => h("i"));
-  cells.forEach(c => frame.append(c)); outs.forEach(c => extra.append(c));
-  stage.append(h("div", null, eq, frame, extra));
-  if (plus) {
-    const need = 10 - p.a, rest = p.b - need;
-    cells.forEach((c, k) => { if (k < p.a) c.className = "a"; });
-    return [
-      () => { msg.innerHTML = `<b>${p.text}</b> — 파란 점이 ${p.a}개 있어요. 먼저 10을 만들어요!`; },
-      () => { msg.innerHTML = `${p.a}${eul(p.a) === "을" ? "은" : "는"} ${need}${iga(need)} 더 있으면 10이 돼요. 그래서 ${p.b}${eul(p.b)} <b>${need}${gwa(need)} ${rest}</b>${ro(rest)} 갈라요.`; },
-      () => { cells.forEach((c, k) => { if (k >= p.a) c.className = "b"; }); msg.innerHTML = `${p.a} + ${need} = <b>10</b> — 10칸이 꽉 찼어요!`; },
-      () => { outs.forEach((c, k) => { if (k < rest) c.className = "b"; }); eq.innerHTML = p.full; msg.innerHTML = `10 + ${rest} = <b>${p.ans}</b> 🎉`; }
-    ];
+// 숫자판: 숫자·지우기·확인. 쓴 수가 바뀔 때마다 onChange, ‘확인’을 누르면 onEnter.
+function keypad(onChange, onEnter) {
+  let val = "";
+  const pad = h("div", { class: "pad p3" });
+  const set = v => { val = v; onChange(val); };
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, "⌫", 0, "확인"].forEach(k => {
+    const b = h("button", { type: "button", class: typeof k === "number" ? "" : (k === "확인" ? "go" : "del") }, k);
+    b.onclick = () => {
+      if (k === "⌫") { set(val.slice(0, -1)); sfx.tap(); }
+      else if (k === "확인") onEnter(val);
+      else if (val.length < 2) { sfx.tap(); set(val === "0" ? String(k) : val + k); }
+    };
+    pad.append(b);
+  });
+  return { pad, clear: () => set("") };
+}
+
+// 보기 없이 답을 직접 쓰기 (식 · 세 수 계산 · 이야기 문제). 틀릴 때마다 힌트가 한 단계씩 나온다.
+ENG.input = (host, cfg, done) => {
+  const items = many(cfg.gen, cfg.n || 8);
+  let i = 0, miss = 0;
+  const bar = progress(host, items.length), box = h("div", { class: "lq" });
+  host.append(box);
+  function show() {
+    if (i >= items.length) return done(miss, items.length);
+    bar.set(i);
+    const it = items[i], eq = h("div", { class: "eq", html: it.q }), out = h("div", { class: "ans" }), msg = h("div", { class: "stepmsg" });
+    const hints = it.hints || ["세로로 써서 <b>일의 자리부터</b> 계산해 봐요", `일의 자리 숫자는 <b>${it.ans % 10}</b>`];
+    let tries = 0, lock = false;
+    const kp = keypad(v => { out.textContent = v; }, v => {
+      if (lock || v === "") return;
+      if (+v === it.ans) { lock = true; out.classList.add("ok"); eq.innerHTML = it.full; msg.innerHTML = ""; sfx.ok(); later(() => { i++; show(); }, 1300); return; }
+      miss++; tries++; sfx.no(); shakeIt(out); kp.clear();
+      msg.innerHTML = tries > hints.length ? `정답은 <b>${it.ans}</b> — 똑같이 눌러 봐요` : "힌트 · " + hints[tries - 1];
+    });
+    box.innerHTML = "";
+    box.append(...[it.e && h("div", { class: "pe" }, it.e), it.story && h("div", { class: "st" }, it.story), eq, out, msg, kp.pad].filter(Boolean));
   }
-  const ones = p.a - 10, rest = p.b - ones;
-  cells.forEach(c => c.className = "a"); outs.forEach((c, k) => { if (k < ones) c.className = "a"; });
-  return [
-    () => { msg.innerHTML = `<b>${p.text}</b> — 점이 ${p.a}개 있어요 (10개와 ${ones}개). 먼저 10을 만들어요!`; },
-    () => { msg.innerHTML = `${p.a}에서 ${ones}${eul(ones)} 먼저 빼면 10이 돼요. 그래서 ${p.b}${eul(p.b)} <b>${ones}${gwa(ones)} ${rest}</b>${ro(rest)} 갈라요.`; },
-    () => { outs.forEach((c, k) => { if (k < ones) c.className = "gone"; }); msg.innerHTML = `${p.a} − ${ones} = <b>10</b>`; },
-    () => { cells.forEach((c, k) => { if (k >= 10 - rest) c.className = "gone"; }); eq.innerHTML = p.full; msg.innerHTML = `10 − ${rest} = <b>${p.ans}</b> 🎉`; }
-  ];
-});
+  show();
+};
 
-// 4개 중에 답 고르기 (식 · □ 찾기 · 수 모형 세기)
+// 크기 비교: 양쪽을 계산해서 > = < 고르기
+ENG.cmp = (host, cfg, done) => {
+  const items = many(GEN.cmp, 8);
+  let i = 0, miss = 0;
+  const bar = progress(host, items.length), box = h("div", { class: "lq" });
+  host.append(box);
+  function show() {
+    if (i >= items.length) return done(miss, items.length);
+    bar.set(i);
+    const it = items[i], eq = h("div", { class: "eq md", html: it.q }), msg = h("div", { class: "stepmsg" });
+    const grid = h("div", { class: "opts", style: { gridTemplateColumns: "repeat(3,1fr)", maxWidth: "460px" } });
+    [">", "=", "<"].forEach(sign => {
+      const b = h("button", { class: "opt", type: "button", onclick: () => {
+        if (sign === it.ans) {
+          b.classList.add("ok", "pop"); grid.querySelectorAll(".opt").forEach(x => x.disabled = true);
+          eq.innerHTML = it.full; msg.innerHTML = `계산하면 <b>${it.note}</b>`; sfx.ok(); later(() => { i++; show(); }, 1800);
+        } else { b.classList.add("no", "shake"); b.disabled = true; miss++; sfx.no(); }
+      } }, h("span", { class: "lt" }, sign));
+      grid.append(b);
+    });
+    box.innerHTML = "";
+    box.append(eq, grid, msg);
+  }
+  show();
+};
+
+// 수 만들기·차 만들기: 카드 6장에서 더해서(빼서) 목표 수가 되는 두 장 고르기
+ENG.pair = (host, cfg, done) => {
+  const items = many(cfg.gen, 8, true);
+  let i = 0, miss = 0;
+  const bar = progress(host, items.length), box = h("div", { class: "lq" });
+  host.append(box);
+  function show() {
+    if (i >= items.length) return done(miss, items.length);
+    bar.set(i);
+    const it = items[i], op = it.minus ? "−" : "+", eq = h("div", { class: "eq", html: `<i>□</i> ${op} <i>□</i> = ${it.ans}` }), grid = h("div", { class: "pcards" });
+    let sel = [], lock = false;
+    it.cards.forEach(n => {
+      const b = h("button", { class: "pc", type: "button" }, n);
+      b.onclick = () => {
+        if (lock) return;
+        if (sel.some(s => s.b === b)) { sel = sel.filter(s => s.b !== b); b.classList.remove("sel"); return; }
+        b.classList.add("sel"); sel.push({ n, b }); sfx.tap();
+        if (sel.length < 2) return;
+        const [x, y] = sel;
+        const big = Math.max(x.n, y.n), small = Math.min(x.n, y.n);
+        if ((it.minus ? big - small : big + small) === it.ans) { lock = true; [x.b, y.b].forEach(e => e.classList.add("ok")); eq.innerHTML = `${big} ${op} ${small} = <b>${it.ans}</b>`; sfx.ok(); later(() => { i++; show(); }, 1400); }
+        else { miss++; sfx.no(); [x.b, y.b].forEach(e => { shakeIt(e); e.classList.remove("sel"); }); sel = []; }
+      };
+      grid.append(b);
+    });
+    box.innerHTML = "";
+    box.append(eq, grid);
+  }
+  show();
+};
+
+
+// 4개 중에 답 고르기 (식 · □ 찾기 · 규칙 찾기)
 ENG.pick = (host, cfg, done) => {
   const items = many(cfg.gen, 10);
   let i = 0, miss = 0;
@@ -621,7 +727,7 @@ ENG.pick = (host, cfg, done) => {
       } });
       grid.append(b);
     });
-    box.append(...[it.blocks && blocks(it.n, true), eq, grid].filter(Boolean));
+    box.append(eq, grid);
   }
   show();
 };
@@ -718,65 +824,6 @@ ENG.memory = (host, cfg, done) => {
     grid.append(b);
   });
   host.append(grid, tryEl);
-};
-
-// 내려오는 숫자 풍선: 아래 식(또는 수 모형)의 답을 터뜨린다. 정답 풍선은 화면에 하나만, 하나 맞히면 다음 문제.
-const COLORS = ["#FF6B8A", "#FFB020", "#4CC9F0", "#5CC98A", "#9B5DE5", "#FF7A45", "#2E8BF0", "#3FA7F5"];
-ENG.fall = (host, cfg, done) => {
-  const GOAL = 10, FALL_MS = 9000;                      // 계산할 시간이 필요해 글자 풍선보다 천천히
-  const run = RUN, targets = many(cfg.gen, GOAL);
-  let x = targets[0], ti = 0, score = 0, miss = 0, balls = [], stop = false, pauseUntil = 0, decoys = [];
-  const scoreEl = h("span", { class: "fs" }), field = h("div", { class: "field" }), base = h("div", { class: "base" });
-  host.append(h("div", { class: "fhead" }, scoreEl), field, base);
-  const setScore = () => scoreEl.textContent = `⭐ ${score} / ${GOAL}`;
-  function showTarget() {
-    base.innerHTML = "";
-    base.append(x.blocks ? blocks(x.n) : h("div", { class: "tgt" }, x.text));
-    decoys = wrongs(x, 6);
-  }
-  function nextTarget() {
-    x = targets[++ti % targets.length];
-    balls.forEach(b => { b.gone = true; b.el.style.transition = "opacity .3s"; b.el.style.opacity = "0"; setTimeout(() => b.el.remove(), 300); });
-    balls = []; pauseUntil = performance.now() + 1000;
-    showTarget();
-  }
-  function spawn() {
-    const W = field.clientWidth, lanes = Math.max(3, Math.floor(W / 110));
-    const busy = new Set(balls.filter(b => b.y < 150).map(b => b.lane));
-    const free = [...Array(lanes).keys()].filter(l => !busy.has(l));
-    if (!free.length) return;
-    const lane = free[Math.random() * free.length | 0];
-    const ok = !balls.some(b => b.ok) && (balls.length > 0 || Math.random() < .4);
-    const n = ok ? x.ans : shuffle(decoys.filter(d => !balls.some(b => b.n === d)))[0];
-    if (n == null) return;
-    const el = h("button", { class: "bl", type: "button",
-      style: { "--bc": COLORS[Math.random() * COLORS.length | 0], left: ((lane + .5) * W / lanes - 43) + "px", animationDelay: (-Math.random() * 3).toFixed(2) + "s" } }, n);
-    const b = { el, ok, n, lane, y: -120, gone: false };
-    el.onclick = () => {
-      if (b.gone || stop) return;
-      if (!b.ok) { miss++; sfx.no(); shakeIt(el); return; }
-      b.gone = true; balls = balls.filter(q => q !== b);
-      el.classList.add("pop"); setTimeout(() => el.remove(), 400);
-      sfx.ok(); score++; setScore(); pauseUntil = performance.now() + 2000;
-      if (score >= GOAL) { stop = true; later(() => done(miss, GOAL), 900); }
-      else later(nextTarget, 350);
-    };
-    field.append(el); balls.push(b);
-  }
-  let prev = performance.now(), nextSpawn = prev + 700;
-  function frame(now) {
-    if (run !== RUN || stop || !document.body.contains(field)) return;
-    const dt = Math.min(1000, now - prev), H = field.clientHeight;   // 화면 갱신이 느린 기기에서도 실제 시간만큼 내려온다
-    prev = now;
-    balls = balls.filter(b => {
-      b.y += (H + 120) / FALL_MS * dt; b.el.style.top = b.y + "px";
-      if (b.y > H) { b.el.remove(); return false; }
-      return true;
-    });
-    if (now >= nextSpawn && now >= pauseUntil) { spawn(); nextSpawn = now + 1900 + Math.random() * 700; }
-    requestAnimationFrame(frame);
-  }
-  setScore(); showTarget(); requestAnimationFrame(frame);
 };
 
 /* ================= screens ================= */
