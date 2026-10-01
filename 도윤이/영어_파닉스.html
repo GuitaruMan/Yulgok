@@ -212,8 +212,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .tgt{font:600 3.2rem/1 'Fredoka';color:var(--cd);background:#fff;border:4px solid var(--c);border-radius:20px;padding:10px 24px}
 .tgt.ko{font:700 3.2rem/1 'Noto Sans KR'}
 
-.pe .kos{display:block;font:700 1.2rem/1.3 'Noto Sans KR';color:var(--sub)}
-.lc .ko,.wc .ko{font:700 1rem 'Noto Sans KR';color:var(--sub);margin-top:4px}
+.pe .kos{display:block;font:700 1.2rem/1.3 'Noto Sans KR';font-style:normal;color:var(--sub)}
+.lc .ko,.wc .ko{font:700 1rem 'Noto Sans KR';color:var(--sub);margin:0 0 4px}
 .opt .kox{display:block;font:700 1.05rem 'Noto Sans KR';font-style:normal;color:var(--sub);line-height:1.3}
 
 /* result */
@@ -452,7 +452,7 @@ ENG.lcards = (host, cfg, done) => {
     const grid = h("div", { class: "lgd" });
     list.forEach(x => {
       const c = h("button", { class: "lc", type: "button" }, h("span", { class: "hk" }, x.k), h("div", { class: "L" }, x.L, h("small", null, x.l)),
-        h("div", { class: "em" }, x.e), h("div", { class: "w", html: markW(x) }), h("div", { class: "ko" }, x.ko));
+        h("div", { class: "em" }, x.e), h("div", { class: "ko" }, x.ko), h("div", { class: "w", html: markW(x) }));
       c.onclick = () => { say(x.w); c.classList.add("on"); c.classList.remove("pop"); void c.offsetWidth; c.classList.add("pop"); seen.add(x.L); upd(); };
       grid.append(c);
     });
@@ -469,7 +469,7 @@ ENG.wcards = (host, cfg, done) => {
     const grid = h("div", { class: "wg" });
     f.words.forEach(([w, e]) => {
       const tiles = [...w].map(ch => h("button", { class: "tl" + (ch === f.v ? " v" : ""), type: "button" }, ch, h("small", null, HK[ch])));
-      const card = h("div", { class: "wc" }, h("button", { class: "pe", type: "button", onclick: () => say(w) }, e, h("span", null, "🔊")), h("div", { class: "tls" }, tiles), h("div", { class: "ko" }, KO[w]));
+      const card = h("div", { class: "wc" }, h("button", { class: "pe", type: "button", onclick: () => say(w) }, e, h("span", null, "🔊")), h("div", { class: "ko" }, KO[w]), h("div", { class: "tls" }, tiles));
       tiles.forEach(t => t.onclick = () => {
         t.classList.add("on"); sfx.tap();
         if (tiles.every(x => x.classList.contains("on"))) { card.classList.add("done"); setTimeout(() => say(w), 250); }
