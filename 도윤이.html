@@ -15,7 +15,15 @@
   a.back { color: var(--ink-soft); text-decoration: none; font-size: 0.9rem; }
   a.back:hover { color: var(--accent); }
   h1 { font-size: 1.6rem; margin: 0.5rem 0 2.5rem; }
-  .empty { color: var(--ink-soft); font-size: 0.95rem; margin-top: 2rem; }
+  .list { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 1rem; }
+  a.item {
+    background: var(--card); border-radius: 14px; padding: 1.2rem 1.5rem;
+    text-decoration: none; color: var(--ink); box-shadow: 0 3px 12px var(--shadow);
+    display: flex; align-items: center; gap: 1rem; transition: transform 0.15s ease;
+  }
+  a.item:hover { transform: translateX(4px); }
+  .doc-icon { font-size: 1.5rem; }
+  .item-text { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
 </style>
 </head>
 <body>
@@ -23,6 +31,13 @@
     <a class="back" href="index.html">&larr; 홈으로</a>
   </div>
   <h1>🧒 도윤이</h1>
-  <div class="empty">아직 등록된 자료가 없습니다.</div>
+  <div class="list">
+    <a class="item" href="도윤이/영어_파닉스.html">
+      <span class="doc-icon">🔤</span>
+      <span class="item-text">
+        <span>영어 파닉스 게임 - 알파벳 소리 · 쉬운 단어 (발음 듣기)</span>
+      </span>
+    </a>
+  </div>
 </body>
 </html>
