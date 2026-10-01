@@ -292,14 +292,22 @@ let RUN = 0;
 /* ================= sound & voice ================= */
 // iPad 무음 스위치가 켜져 있어도 소리가 나도록 playback 세션을 쓴다.
 let AC = null;
+const BUF = {};                 // 단어별로 풀어 둔 소리
 function ctx() {
-  if (!AC) {
+  if (!AC || AC.state === "closed") {
     AC = new (window.AudioContext || window.webkitAudioContext)();
     try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
   }
-  if (AC.state === "suspended") AC.resume();
+  if (AC.state !== "running") AC.resume();     // iPad는 다른 앱에 다녀오면 "suspended"가 아니라 "interrupted"가 된다
   return AC;
 }
+// iPad에서 페이지를 닫았다 열면 소리 장치가 멈춘 채 남는 일이 있어, 돌아올 때 버리고 다음에 누를 때 새로 만든다.
+function resetAudio() {
+  if (AC) { try { AC.close(); } catch (e) {} AC = null; }
+  for (const w in BUF) delete BUF[w];
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resetAudio(); });
+window.addEventListener("pageshow", e => { if (e.persisted) resetAudio(); });
 ["pointerdown", "touchend", "keydown"].forEach(ev => document.addEventListener(ev, () => { try { ctx(); } catch (e) {} }, { passive: true }));
 function tone(f, t0, d, type, g) {
   if (!S.sound) return;
@@ -319,7 +327,7 @@ const sfx = {
   win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .12, .3)); }
 };
 // 단어 발음: Wikimedia Commons 사람 녹음 (효과음 끄기와 상관없이 항상 들린다)
-const RAW = {}, BUF = {};
+const RAW = {};
 let voiceNow = null;
 const raw = w => RAW[w] || (RAW[w] = fetch(AUD + w + ".mp3").then(r => { if (!r.ok) throw r.status; return r.arrayBuffer(); }));
 function say(w) {
