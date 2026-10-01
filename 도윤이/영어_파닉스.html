@@ -212,6 +212,10 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .tgt{font:600 3.2rem/1 'Fredoka';color:var(--cd);background:#fff;border:4px solid var(--c);border-radius:20px;padding:10px 24px}
 .tgt.ko{font:700 3.2rem/1 'Noto Sans KR'}
 
+.pe .kos{display:block;font:700 1.2rem/1.3 'Noto Sans KR';color:var(--sub)}
+.lc .ko,.wc .ko{font:700 1rem 'Noto Sans KR';color:var(--sub);margin-top:4px}
+.opt .kox{display:block;font:700 1.05rem 'Noto Sans KR';font-style:normal;color:var(--sub);line-height:1.3}
+
 /* result */
 #fx{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
 #fx i{position:absolute;top:-20px;width:11px;height:16px;border-radius:3px;animation:fall linear forwards}
@@ -371,19 +375,26 @@ const FAM = [
   { v: "u", words: [["sun", "☀️"], ["bus", "🚌"], ["cup", "🥤"], ["bug", "🐛"], ["nut", "🥜"], ["hut", "🛖"]] }
 ];
 const CVC = FAM.flatMap(f => f.words.map(([w, e]) => ({ w, e, v: f.v })));
+// 그림 아래에 붙이는 우리말 뜻 — 그림만으로는 뜻을 모를 수 있어서, 우리말 뜻에 영어를 맞추게 한다
+const KO = { apple: "사과", ball: "공", cat: "고양이", dog: "개", egg: "달걀", fish: "물고기", goat: "염소", hat: "모자", insect: "곤충", juice: "주스", kite: "연", lion: "사자",
+  moon: "달", nut: "땅콩", octopus: "문어", pig: "돼지", queen: "여왕", rabbit: "토끼", sun: "해", tiger: "호랑이", umbrella: "우산", van: "승합차", web: "거미줄", fox: "여우",
+  "yo-yo": "요요", zebra: "얼룩말", thumb: "엄지", bat: "박쥐", bag: "가방", map: "지도", pan: "프라이팬", bed: "침대", pen: "펜", hen: "암탉", net: "그물", leg: "다리", ten: "열",
+  pin: "핀", lip: "입술", kid: "아이", six: "여섯", zip: "지퍼", box: "상자", pot: "냄비", log: "통나무", ox: "황소", bus: "버스", cup: "컵", bug: "벌레", hut: "오두막" };
+LT.concat(CVC).forEach(x => { x.ko = KO[x.w]; });
+const pic = x => h("div", { class: "pe" }, x.e, h("small", { class: "kos" }, x.ko));       // 그림 + 우리말 뜻
 const VOWELS = FAM.map(f => f.v);
 const CONS = [...new Set(CVC.flatMap(x => [...x.w].filter(c => !VOWELS.includes(c))))];
 
 function firstSound() {
   return shuffle(FIRST).slice(0, 10).map(x => ({
-    say: x.w, e: x.e,
+    say: x.w, e: x.e, ko: x.ko,
     opts: [x].concat(shuffle(FIRST.filter(o => o.k !== x.k)).slice(0, 2)).map(o => letterOpt(o.L + " " + o.l, o.k))
   }));
 }
 function pickPic() {                    // 같은 모음 단어끼리 섞어서 첫소리·끝소리로 구별하게
   return shuffle(CVC).slice(0, 10).map(x => ({
     say: x.w, pic: true,
-    opts: [x.e].concat(shuffle(CVC.filter(o => o.v === x.v && o.w !== x.w)).slice(0, 2).map(o => o.e))
+    opts: [x].concat(shuffle(CVC.filter(o => o.v === x.v && o.w !== x.w)).slice(0, 2)).map(o => `${o.e}<em class="kox">${o.ko}</em>`)
   }));
 }
 function blank() {
@@ -391,7 +402,7 @@ function blank() {
     const p = Math.random() * x.w.length | 0, ch = x.w[p];
     const pool = (VOWELS.includes(ch) ? VOWELS : CONS).filter(c => HK[c] !== HK[ch]);
     return {
-      say: x.w, e: x.e,
+      say: x.w, e: x.e, ko: x.ko,
       word: [...x.w].map((c, k) => k === p ? "<i>&nbsp;</i>" : c).join(""),
       full: [...x.w].map((c, k) => k === p ? `<b>${c}</b>` : c).join(""),
       opts: [ch].concat(shuffle(pool).slice(0, 2)).map(c => letterOpt(c, HK[c]))
@@ -441,7 +452,7 @@ ENG.lcards = (host, cfg, done) => {
     const grid = h("div", { class: "lgd" });
     list.forEach(x => {
       const c = h("button", { class: "lc", type: "button" }, h("span", { class: "hk" }, x.k), h("div", { class: "L" }, x.L, h("small", null, x.l)),
-        h("div", { class: "em" }, x.e), h("div", { class: "w", html: markW(x) }));
+        h("div", { class: "em" }, x.e), h("div", { class: "w", html: markW(x) }), h("div", { class: "ko" }, x.ko));
       c.onclick = () => { say(x.w); c.classList.add("on"); c.classList.remove("pop"); void c.offsetWidth; c.classList.add("pop"); seen.add(x.L); upd(); };
       grid.append(c);
     });
@@ -458,7 +469,7 @@ ENG.wcards = (host, cfg, done) => {
     const grid = h("div", { class: "wg" });
     f.words.forEach(([w, e]) => {
       const tiles = [...w].map(ch => h("button", { class: "tl" + (ch === f.v ? " v" : ""), type: "button" }, ch, h("small", null, HK[ch])));
-      const card = h("div", { class: "wc" }, h("button", { class: "pe", type: "button", onclick: () => say(w) }, e, h("span", null, "🔊")), h("div", { class: "tls" }, tiles));
+      const card = h("div", { class: "wc" }, h("button", { class: "pe", type: "button", onclick: () => say(w) }, e, h("span", null, "🔊")), h("div", { class: "tls" }, tiles), h("div", { class: "ko" }, KO[w]));
       tiles.forEach(t => t.onclick = () => {
         t.classList.add("on"); sfx.tap();
         if (tiles.every(x => x.classList.contains("on"))) { card.classList.add("done"); setTimeout(() => say(w), 250); }
@@ -480,7 +491,7 @@ ENG.listen = (host, cfg, done) => {
     bar.set(i);
     const it = items[i];
     box.innerHTML = "";
-    box.append(h("div", { class: "lqh" }, it.e && h("div", { class: "pe" }, it.e), speaker(it.say)));
+    box.append(h("div", { class: "lqh" }, it.e && pic(it), speaker(it.say)));
     const wd = it.word && h("div", { class: "wd", html: it.word });
     if (wd) box.append(wd);
     const grid = h("div", { class: "opts", style: { gridTemplateColumns: `repeat(${it.opts.length},1fr)` } });
@@ -505,7 +516,7 @@ ENG.cross = (host, cfg, done) => {
   const byW = Object.fromEntries(CVC.map(x => [x.w, x]));
   let L, miss = 0;
   for (let t = 0; t < 30; t++) { L = CrossPuzzle.layout(shuffle(CVC).slice(0, 7).map(x => x.w), 9, 9); if (L.entries.length >= 5) break; }
-  CrossPuzzle.mount(host, L, { keys: shuffle([...new Set(L.entries.flatMap(e => [...e.word]))]), chip: e => byW[e.word].e,
+  CrossPuzzle.mount(host, L, { keys: shuffle([...new Set(L.entries.flatMap(e => [...e.word]))]), chip: e => byW[e.word].e + " " + KO[e.word],
     onSelect: e => say(e.word), onTap: sfx.tap, onOk: e => { sfx.ok(); later(() => say(e.word), 250); }, onMiss: () => { miss++; sfx.no(); },
     onDone: () => later(() => done(miss, L.entries.length), 1000) });
 };
@@ -543,7 +554,7 @@ ENG.balloon = (host, cfg, done) => {
       };
       sky.append(b);
     });
-    box.append(h("div", { class: "lqh" }, h("div", { class: "pe" }, x.e), speaker(x.w)), sky);
+    box.append(h("div", { class: "lqh" }, pic(x), speaker(x.w)), sky);
     later(() => say(x.w), 400);
   }
   round();
@@ -560,7 +571,7 @@ ENG.fall = (host, cfg, done) => {
   const setScore = () => scoreEl.textContent = `⭐ ${score} / ${GOAL}`;
   function showTarget() {
     base.innerHTML = "";
-    base.append(h("div", { class: "pe" }, x.e), h("div", { class: "tgt" + (ko ? "" : " ko") }, ko ? x.L + " " + x.l : x.k), speaker(x.w));
+    base.append(pic(x), h("div", { class: "tgt" + (ko ? "" : " ko") }, ko ? x.L + " " + x.l : x.k), speaker(x.w));
     later(() => say(x.w), 300);
   }
   function nextTarget() {
@@ -625,7 +636,7 @@ ENG.build = (host, cfg, done) => {
     const it = items[i], toks = [...it.w];
     let pos = 0;
     box.innerHTML = "";
-    box.append(h("div", { class: "lqh" }, h("div", { class: "pe" }, it.e), speaker(it.w)));
+    box.append(h("div", { class: "lqh" }, pic(it), speaker(it.w)));
     const slots = toks.map(() => h("span", { class: "slot" }));
     slots[0].classList.add("cur");
     const pool = h("div", { class: "pool" });
