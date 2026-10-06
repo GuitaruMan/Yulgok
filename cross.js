@@ -13,7 +13,7 @@
   font:600 calc(var(--cx,52px)*.55)/1 'Fredoka','Jua',sans-serif;color:inherit;padding:0;border-radius:0}
 .cxc sup{position:absolute;left:3px;top:3px;font:600 .62rem 'Fredoka',sans-serif;color:var(--cd)}
 .cxc.hl{background:var(--cl)}
-.cxc.at{background:#FFE9A8}
+.cxc.at{background:#FFE9A8;box-shadow:inset 0 0 0 4px var(--c)}
 .cxc.ok{background:var(--okl);color:#14703d}
 .cxc.ok.at{box-shadow:inset 0 0 0 4px var(--c)}
 .cxc.no{background:var(--nol);color:#a52328;animation:shake .35s}
@@ -114,7 +114,9 @@
     const grid = el("div", "cxg"), list = el("div", "cxl"), keys = el("div", "cxkeys");
     grid.style.gridTemplateColumns = `repeat(${L.w},var(--cx,52px))`;
     if (opt.size) grid.style.setProperty("--cx", opt.size + "px");
-    let cur = null, pos = 0;
+    // 칸을 고를 필요가 없다: 글자는 언제나 고른 단어의 '첫 빈칸'(노란 칸)에 들어간다.
+    let cur = null;
+    const at = () => (cur ? cur.cells.findIndex(c => !c.lock && !c.val) : -1);
     for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) {
       const c = cells[y + "," + x];
       if (!c) { grid.append(el("div")); continue; }
@@ -125,9 +127,7 @@
       c.el.onclick = () => {
         const open = c.ents.filter(e => !e.done);
         if (!open.length) return;
-        const same = cur && cur.cells[pos] === c;
-        const e = open.includes(cur) ? (same && open.length > 1 ? open.find(o => o !== cur) : cur) : open[0];
-        select(e, c);
+        select(open.includes(cur) ? cur : open[0]);       // 칸을 누르면 그 단어만 고른다 (쓸 자리는 바뀌지 않는다)
       };
       grid.append(c.el);
     }
@@ -143,6 +143,7 @@
       keys.append(b);
     });
     function paint() {
+      const pos = at();
       for (const k in cells) {
         const c = cells[k];
         c.el.classList.toggle("ok", c.lock);
@@ -153,7 +154,7 @@
     }
     function select(e, c, force) {
       const changed = e !== cur;
-      cur = e; pos = c ? e.cells.indexOf(c) : 0;          // 항상 첫 칸부터 차례로 쓴다
+      cur = e;
       paint();
       if ((changed || force) && opt.onSelect) opt.onSelect(e);
     }
@@ -164,26 +165,31 @@
       e.cells.forEach(c => { if (c.lock) return; c.el.classList.add("no"); c.bad = true; });
       setTimeout(() => {
         e.cells.forEach(c => { if (!c.bad) return; c.bad = false; c.el.classList.remove("no"); if (!c.lock) { c.val = ""; c.txt.textContent = ""; } });
-        if (cur === e) pos = 0;
         paint();
       }, 600);
     }
     function press(k) {
       if (!cur) return;
-      let c = cur.cells[pos];
-      if (k === "⌫") {
-        if (c.lock || !c.val) { for (let p = pos - 1; p >= 0; p--) if (!cur.cells[p].lock) { pos = p; c = cur.cells[p]; break; } }
-        if (!c.lock) { c.val = ""; c.txt.textContent = ""; }
+      const cs = cur.cells;
+      if (k === "⌫") {                                   // 내가 쓴 마지막 글자를 지운다
+        for (let p = cs.length - 1; p >= 0; p--) if (!cs[p].lock && cs[p].val) { cs[p].val = ""; cs[p].txt.textContent = ""; break; }
         paint(); return;
       }
-      if (c.lock) {                                     // 이미 맞힌 칸: 같은 글자를 누르면 다음 칸으로 넘어간다
-        if (k !== c.ch) { if (opt.onMiss) opt.onMiss(cur); c.el.classList.add("no"); setTimeout(() => c.el.classList.remove("no"), 600); return; }
-      } else { c.val = k; c.txt.textContent = k; }
+      const pos = at();
+      if (pos < 0) return;                               // 채점 중(틀린 글자가 지워지는 동안)에는 받지 않는다
+      const c = cs[pos];
+      if (k !== c.ch) {                                  // 바로 앞에 이미 채워진 글자를 따라 읽으며 누른 것은 틀린 것으로 치지 않는다
+        for (let p = pos - 1; p >= 0 && cs[p].lock; p--) if (cs[p].ch === k) {
+          const d = cs[p]; d.el.classList.add("at"); setTimeout(paint, 300);
+          if (opt.onTap) opt.onTap();
+          return;
+        }
+      }
+      c.val = k; c.txt.textContent = k;
       if (opt.onTap) opt.onTap();
       c.ents.slice().forEach(judge);
       if (L.entries.every(e => e.done)) { cur = null; paint(); if (opt.onDone) opt.onDone(); return; }
       if (cur.done) { select(L.entries.find(e => !e.done)); return; }
-      if (pos < cur.cells.length - 1) pos++;
       paint();
     }
     const wrap = el("div", "cxw");
