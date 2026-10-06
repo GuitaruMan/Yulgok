@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보물 책장 - My Presentations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Jua&family=Gaegu:wght@400;700&family=Hi+Melody&family=Noto+Sans+KR:wght@400;500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#3b2a1a;--sub:#7a6753;--gold:#FFB020;--gd:#B97F00;--c:#8B5E34;--cd:#5E3D1E;--cl:#FFF3DC;--paper:#FFFBF2}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:17px}
+body{font-family:'Nunito','Noto Sans KR','Malgun Gothic',sans-serif;color:var(--ink);min-height:100vh;line-height:1.5;
+  background:radial-gradient(circle at 50% -10%,#FFE9A8 0,#FFD98A 28%,#F6C777 55%,#EDB765 100%) fixed;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+#app{max-width:1000px;margin:0 auto;padding:16px 20px 70px}
+.j{font-family:'Jua','Malgun Gothic',sans-serif}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 17px;border-radius:14px;background:#fff;font-weight:800;font-size:.95rem;
+  border:2px solid #d9b98a;box-shadow:0 4px 0 #d9b98a;text-decoration:none;color:var(--ink);white-space:nowrap;transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #d9b98a}
+.btn.pri{background:var(--gold);border-color:var(--gd);box-shadow:0 4px 0 var(--gd);color:#4a2f00}
+.btn.pri:active{box-shadow:0 1px 0 var(--gd)}
+.btn.big{font-size:1.15rem;padding:13px 26px;border-radius:18px}
+.btn.dark{background:var(--cd);border-color:#3a240f;box-shadow:0 4px 0 #3a240f;color:#fff}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.top .sp{flex:1}
+.pill{font-family:'Fredoka';font-weight:700;background:#fff;border-radius:99px;padding:6px 14px;border:2px solid var(--gold);color:#8a5a00;font-size:.95rem;white-space:nowrap}
+
+/* locked */
+.lock{background:var(--paper);border:4px solid var(--c);border-radius:30px;padding:34px 30px 30px;text-align:center;box-shadow:0 9px 0 var(--cd);margin-top:10px}
+.chest{font-size:6.5rem;line-height:1;display:inline-block;animation:wig 2.4s ease-in-out infinite;filter:drop-shadow(0 8px 8px rgba(94,61,30,.3))}
+@keyframes wig{0%,84%,100%{transform:rotate(0)}88%{transform:rotate(-7deg)}92%{transform:rotate(7deg)}96%{transform:rotate(-4deg)}}
+.lock h1{font-family:'Jua';font-weight:400;font-size:2.2rem;margin-top:8px}
+.lock p{color:var(--sub);font-size:1.05rem;margin-top:4px}
+.lock p b{color:#c2410c;font-size:1.3rem;font-family:'Fredoka'}
+.meter{display:flex;align-items:center;gap:14px;margin:22px auto 6px;max-width:640px}
+.track{flex:1;height:30px;border-radius:99px;background:#F0E0C4;overflow:hidden;border:3px solid var(--c);position:relative}
+.fill{height:100%;background:repeating-linear-gradient(45deg,#FFD166 0 14px,#FFC233 14px 28px);border-radius:99px;transition:width 1s}
+.meter .num{font-family:'Fredoka';font-weight:700;font-size:1.3rem;white-space:nowrap}
+.peek{display:flex;gap:22px;justify-content:center;margin:26px 0 22px;flex-wrap:wrap}
+.peek div{width:200px;height:230px;border-radius:16px;overflow:hidden;border:4px solid var(--c);position:relative;background:#ddd}
+.peek img{width:100%;height:100%;object-fit:cover;filter:blur(7px) grayscale(.6) brightness(.8);transform:scale(1.15)}
+.peek span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3.6rem}
+.go{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* shelf */
+.banner{background:linear-gradient(135deg,#FF8A3D,#FFB020 55%,#FFD166);color:#4a2400;border-radius:28px;padding:24px 30px;position:relative;overflow:hidden;box-shadow:0 8px 0 #C96A12;text-align:center}
+.banner::before,.banner::after{content:"✨";position:absolute;font-size:3rem;opacity:.55;animation:tw 1.8s ease-in-out infinite}
+.banner::before{left:26px;top:14px}.banner::after{right:30px;bottom:10px;animation-delay:.9s}
+@keyframes tw{50%{transform:scale(1.35) rotate(18deg);opacity:1}}
+.banner .who{font-family:'Jua';font-size:1.25rem}
+.banner h1{font-family:'Jua';font-weight:400;font-size:2.5rem;line-height:1.15}
+.banner p{font-weight:700;margin-top:2px}
+.shelf{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:26px}
+.book{background:var(--paper);border:4px solid var(--c);border-radius:26px;padding:18px 18px 20px;box-shadow:0 8px 0 var(--cd);text-align:center;position:relative}
+.book .cv{height:270px;border-radius:14px;overflow:hidden;background:#F4E9D2;display:flex;align-items:center;justify-content:center;border:2px solid #e3cfa8}
+.book .cv img{max-width:100%;max-height:100%;display:block}
+.book h2{font-family:'Fredoka';font-weight:600;font-size:1.5rem;margin-top:12px;line-height:1.2}
+.book .by{color:var(--sub);font-size:.85rem}
+.book .ko{font-family:'Hi Melody','Jua';font-size:1.35rem;font-size:1.1rem;color:var(--cd);margin-top:2px}
+.book .acts{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.book .medal{position:absolute;right:-10px;top:-14px;font-size:2.6rem;transform:rotate(12deg);filter:drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+.note{text-align:center;color:#6b5234;font-size:.8rem;margin-top:26px;line-height:1.6}
+
+/* reader */
+.rd{background:var(--paper);border:4px solid var(--c);border-radius:26px;box-shadow:0 8px 0 var(--cd);padding:20px 26px 22px;min-height:70vh;display:flex;flex-direction:column}
+.rd .pics{display:flex;gap:10px;justify-content:center;align-items:center;margin-bottom:14px}
+.rd .pics img{max-width:100%;max-height:44vh;border-radius:12px;min-width:0;flex:0 1 auto}
+.rd .pics.two img{max-width:calc(50% - 5px)}
+.lines{flex:1}
+.ln{padding:9px 0;border-top:2px dashed #EAD9B8}
+.ln:first-child{border-top:0}
+.ws{display:flex;flex-wrap:wrap;gap:4px 11px;align-items:flex-end}
+.w{display:inline-flex;flex-direction:column;align-items:center}
+.w b{font-family:'Fredoka';font-weight:500;font-size:1.75rem;line-height:1.2;color:#2a1c0e}
+.w i{font-style:normal;font-family:'Gaegu','Malgun Gothic';font-size:1.05rem;font-weight:700;color:#D2571B;line-height:1.15}
+.mean{font-family:'Hi Melody','Gaegu','Malgun Gothic';font-size:1.5rem;color:#3d5a80;margin-top:5px;padding-left:2px;line-height:1.3}
+.mean::before{content:"💬 ";font-size:.85rem}
+.eng .w b{font-size:2rem}
+.eng .ln{border-top:0;padding:7px 0}
+.eng .ws{gap:4px 13px}
+.nav{display:flex;align-items:center;gap:12px;margin-top:16px}
+.nav .pg{flex:1;text-align:center;font-family:'Fredoka';font-weight:600;color:var(--sub)}
+.nav .bar{height:10px;border-radius:99px;background:#F0E0C4;overflow:hidden;margin-top:4px}
+.nav .bar i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .3s}
+.title{font-family:'Fredoka';font-weight:600;font-size:1.15rem;color:var(--cd)}
+.mode{font-family:'Jua';font-size:.85rem;background:var(--cl);border:2px solid var(--gold);border-radius:99px;padding:2px 12px;color:#8a5a00}
+
+/* end */
+.end{text-align:center;margin:auto;padding:20px 0}
+.end .big{font-size:5.5rem;line-height:1.1;animation:pop .6s}
+.end h1{font-family:'Fredoka';font-weight:700;font-size:2.6rem;color:var(--cd)}
+.end p{font-family:'Jua';font-size:1.3rem;margin-top:4px}
+.end .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+@keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+#fx i{position:absolute;top:-24px;font-style:normal;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(540deg)}}
+.open{position:fixed;inset:0;z-index:80;background:rgba(60,35,10,.82);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;padding:20px}
+.open .c{font-size:9rem;line-height:1;animation:burst 1.5s forwards}
+@keyframes burst{0%{transform:scale(.4) rotate(-10deg)}30%{transform:scale(1.1) rotate(8deg)}45%{transform:scale(1) rotate(-8deg)}60%{transform:scale(1.15) rotate(6deg)}100%{transform:scale(1.25)}}
+.open h1{font-family:'Jua';font-weight:400;font-size:2.6rem;margin-top:10px;animation:pop .6s 1s backwards}
+.open p{font-size:1.2rem;font-weight:700;animation:pop .6s 1.3s backwards}
+.open .btn{margin-top:22px;animation:pop .6s 1.7s backwards}
+@media (max-width:760px){.shelf{grid-template-columns:1fr}.w b{font-size:1.45rem}.mean{font-size:1.3rem}.eng .w b{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fx"></div>
+<script src="../progress.js"></script>
+<script src="../보물책장/books.js"></script>
+<script>
+"use strict";
+const CFG = {"id": "taeyeon", "kid": "태연이", "keys": ["taeyeon-phonics", "taeyeon-phonics2"], "localKeys": ["taeyeon-phonics-v1", "taeyeon-phonics2-v1"], "phonics": ["영어_파닉스.html", "영어_파닉스2.html"], "back": "../태연이.html"};
+const A = "../보물책장/";
+const NEED = 30;
+const SKEY = CFG.id + "-reward-v1";
+const ST = { opened: false, done: {}, eng: {} };
+try { Object.assign(ST, JSON.parse(localStorage.getItem(SKEY) || "{}")); } catch (e) {}
+const keep = () => { try { localStorage.setItem(SKEY, JSON.stringify(ST)); } catch (e) {} };
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  if (props) for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "html") el.innerHTML = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "style") Object.assign(el.style, v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(9)) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(c)); }
+  return el;
+}
+const sum = o => Object.values(o || {}).reduce((a, b) => a + (+b || 0), 0);
+function localStars(k) { try { return sum((JSON.parse(localStorage.getItem(k) || "{}")).stars); } catch (e) { return 0; } }
+// 영어(파닉스 1·2단계) 별을 모두 더한다. 서버 기록과 이 기기 기록 중 큰 쪽을 쓴다.
+async function countStars() {
+  let total = 0;
+  for (let i = 0; i < CFG.keys.length; i++) {
+    let srv = 0;
+    try { const r = await KidsProgress.read(CFG.keys[i]); srv = r ? sum(r.stars) : 0; } catch (e) {}
+    total += Math.max(srv, localStars(CFG.localKeys[i]));
+  }
+  return total;
+}
+function confetti(n) {
+  const fx = document.getElementById("fx"), em = ["⭐", "🌟", "✨", "🎉", "📚", "💛"];
+  for (let i = 0; i < (n || 46); i++) {
+    const p = h("i", { style: { left: Math.random() * 100 + "%", fontSize: 16 + Math.random() * 22 + "px", animationDuration: 2 + Math.random() * 2.2 + "s", animationDelay: Math.random() * .7 + "s" } }, em[i % em.length]);
+    fx.append(p); setTimeout(() => p.remove(), 5200);
+  }
+}
+
+const app = document.getElementById("app");
+let STARS = 0;
+const topbar = (...right) => h("div", { class: "top" }, h("a", { class: "btn", href: CFG.back }, "← " + CFG.kid), h("span", { class: "sp" }), ...right, h("span", { class: "pill" }, `⭐ 영어 별 ${STARS}개`));
+
+function locked() {
+  const left = NEED - STARS;
+  app.append(topbar(), h("div", { class: "lock" },
+    h("div", { class: "chest" }, "🎁"),
+    h("h1", null, "보물 책장이 잠겨 있어요"),
+    h("p", { html: `영어 별을 <b>${left}개</b> 더 모으면 열려요!` }),
+    h("div", { class: "meter" }, h("span", { class: "num" }, "⭐"), h("div", { class: "track" }, h("div", { class: "fill", style: { width: Math.min(100, STARS / NEED * 100) + "%" } })), h("span", { class: "num" }, `${STARS} / ${NEED}`)),
+    h("div", { class: "peek" }, Object.values(BOOKS).map(b => h("div", null, h("img", { src: A + b.cover, alt: "" }), h("span", null, "🔒")))),
+    h("p", { style: { marginBottom: "14px" } }, "이 안에 재미있는 그림책 2권이 들어 있어요 📚"),
+    h("div", { class: "go" }, CFG.phonics.map((p, i) => h("a", { class: "btn pri big", href: p }, `${i ? "🚀" : "🔤"} 파닉스 ${i + 1}단계 하러 가기`)))));
+}
+function shelf() {
+  app.append(topbar(), h("div", { class: "banner" },
+    h("div", { class: "who" }, `${CFG.kid}가 영어 별을 ${STARS}개나 모았어요!`),
+    h("h1", null, "🏆 보물 책장이 열렸어요 🏆"),
+    h("p", null, "열심히 공부한 사람만 볼 수 있는 특별한 그림책이에요")),
+    h("div", { class: "shelf" }, Object.entries(BOOKS).map(([id, b]) => h("div", { class: "book" },
+      ST.eng[id] ? h("span", { class: "medal", title: "영어만으로 끝까지 읽었어요" }, "🥇") : ST.done[id] ? h("span", { class: "medal", title: "끝까지 읽었어요" }, "🎖️") : null,
+      h("div", { class: "cv" }, h("img", { src: A + b.cover, alt: b.title })),
+      h("h2", null, b.title), h("div", { class: "by" }, b.by), h("div", { class: "ko" }, b.ko),
+      h("div", { class: "acts" },
+        h("a", { class: "btn pri big", href: `#${id}/h/1` }, "📖 도움 받아 읽기"),
+        ST.done[id] ? h("a", { class: "btn dark big", href: `#${id}/e/1` }, "🌟 영어만 보고 읽기")
+          : h("button", { class: "btn big", disabled: true }, "🔒 영어만 보고 읽기 (한 번 다 읽으면 열려요)"))))),
+    h("p", { class: "note", html: "The Tale of Peter Rabbit (1902) · Beatrix Potter &nbsp;|&nbsp; Millions of Cats (1928) · Wanda Gág<br>저작권 보호 기간이 끝난 작품입니다 (출처: Project Gutenberg). 독음은 한글로 옮긴 근사치예요." }));
+  if (!ST.opened) {
+    ST.opened = true; keep();
+    const ov = h("div", { class: "open" }, h("div", { class: "c" }, "🎁"), h("h1", null, "보물 책장이 열렸어요!"), h("p", null, `영어 별 ${STARS}개 달성 · 그림책 2권 획득`),
+      h("button", { class: "btn pri big", onclick: () => ov.remove() }, "책 보러 가기 ▶"));
+    document.body.append(ov); setTimeout(() => confetti(70), 900);
+  }
+}
+function reader(id, mode, n) {
+  const b = BOOKS[id], eng = mode === "e", last = b.pages.length;
+  const head = h("div", { class: "top" }, h("a", { class: "btn dark", href: "#" }, "🏠 책장"), h("span", { class: "title" }, b.title), h("span", { class: "mode" }, eng ? "영어만 보고 읽기" : "도움 받아 읽기"), h("span", { class: "sp" }));
+  if (n > last) {
+    if (eng) ST.eng[id] = 1; else ST.done[id] = 1;
+    keep(); confetti(60);
+    app.append(head, h("div", { class: "rd" }, h("div", { class: "end" },
+      h("div", { class: "big" }, eng ? "🥇" : "🎖️"), h("h1", null, "The End"),
+      h("p", null, eng ? "영어만 보고 끝까지 읽었어요! 정말 대단해요!" : "끝까지 다 읽었어요! 이제 영어만 보고 읽기가 열렸어요."),
+      h("div", { class: "row" },
+        !eng && h("a", { class: "btn dark big", href: `#${id}/e/1` }, "🌟 영어만 보고 읽기"),
+        h("a", { class: "btn big", href: `#${id}/${mode}/1` }, "↺ 처음부터 다시"), h("a", { class: "btn pri big", href: "#" }, "🏠 책장으로")))));
+    return;
+  }
+  const pg = b.pages[n - 1];
+  app.append(head, h("div", { class: "rd" + (eng ? " eng" : "") },
+    h("div", { class: "pics" + (pg.imgs.length > 1 ? " two" : "") }, pg.imgs.map(f => h("img", { src: A + b.dir + f, alt: "" }))),
+    h("div", { class: "lines" }, pg.lines.map(([en, pr, ko]) => {
+      const pw = pr.split(" ");
+      return h("div", { class: "ln" }, h("div", { class: "ws" }, en.split(" ").map((w, i) => h("span", { class: "w" }, h("b", null, w), !eng && h("i", null, pw[i])))), !eng && h("div", { class: "mean" }, ko));
+    })),
+    h("div", { class: "nav" },
+      n > 1 ? h("a", { class: "btn big", href: `#${id}/${mode}/${n - 1}` }, "◀ 앞 장") : h("span", { class: "btn big", style: { visibility: "hidden" } }, "◀ 앞 장"),
+      h("div", { class: "pg" }, `${n} / ${last}`, h("div", { class: "bar" }, h("i", { style: { width: n / last * 100 + "%" } }))),
+      h("a", { class: "btn pri big", href: `#${id}/${mode}/${n + 1}` }, n === last ? "끝! 🎉" : "다음 장 ▶"))));
+  const nx = b.pages[n];
+  if (nx) nx.imgs.forEach(f => { new Image().src = A + b.dir + f; });
+}
+function render() {
+  app.innerHTML = "";
+  document.querySelectorAll(".open").forEach(o => o.remove());
+  const open = STARS >= NEED || /[?&]preview=1/.test(location.search);   // ?preview=1 : 부모님 미리 보기
+  const m = location.hash.replace(/^#/, "").split("/");
+  if (!open) locked();
+  else if (BOOKS[m[0]] && (m[1] === "h" || (m[1] === "e" && ST.done[m[0]])) && +m[2] >= 1) reader(m[0], m[1], Math.min(+m[2], BOOKS[m[0]].pages.length + 1));
+  else shelf();
+  window.scrollTo({ top: 0 });
+}
+window.addEventListener("hashchange", render);
+document.addEventListener("keydown", e => {
+  const m = location.hash.replace(/^#/, "").split("/");
+  if (!BOOKS[m[0]]) return;
+  if (e.key === "ArrowRight") location.hash = `#${m[0]}/${m[1]}/${+m[2] + 1}`;
+  if (e.key === "ArrowLeft" && +m[2] > 1) location.hash = `#${m[0]}/${m[1]}/${+m[2] - 1}`;
+});
+app.append(h("p", { style: { textAlign: "center", marginTop: "30vh", fontFamily: "Jua", fontSize: "1.3rem" } }, "별을 세고 있어요… ⭐"));
+countStars().then(n => { STARS = n; render(); });
+</script>
+</body>
+</html>
