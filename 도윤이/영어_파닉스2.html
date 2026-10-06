@@ -525,7 +525,7 @@ ENG.cross = (host, cfg, done) => {
   let L, miss = 0;
   for (let t = 0; t < 30; t++) { L = CrossPuzzle.layout(shuffle(WORDS[cfg.set]).slice(0, 7).map(x => x.w), 10, 10); if (L.entries.length >= 5) break; }
   CrossPuzzle.mount(host, L, { size: 48, keys: shuffle([...new Set(L.entries.flatMap(e => [...e.word]))]), chip: e => byW[e.word].e + " " + byW[e.word].ko,     // 그림만으로는 뜻을 모를 수 있어 한글 뜻을 같이 보여 준다
-    onSelect: e => say(e.word), onTap: sfx.tap, onOk: e => { sfx.ok(); later(() => say(e.word), 250); }, onMiss: () => { miss++; sfx.no(); },
+    onSelect: e => say(e.word), onTap: sfx.tap, onOk: sfx.ok, nextDelay: 600, onMiss: () => { miss++; sfx.no(); },
     onDone: () => later(() => done(miss, L.entries.length), 1000) });
 };
 

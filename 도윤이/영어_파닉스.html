@@ -517,7 +517,7 @@ ENG.cross = (host, cfg, done) => {
   let L, miss = 0;
   for (let t = 0; t < 30; t++) { L = CrossPuzzle.layout(shuffle(CVC).slice(0, 7).map(x => x.w), 9, 9); if (L.entries.length >= 5) break; }
   CrossPuzzle.mount(host, L, { keys: shuffle([...new Set(L.entries.flatMap(e => [...e.word]))]), chip: e => byW[e.word].e + " " + KO[e.word],
-    onSelect: e => say(e.word), onTap: sfx.tap, onOk: e => { sfx.ok(); later(() => say(e.word), 250); }, onMiss: () => { miss++; sfx.no(); },
+    onSelect: e => say(e.word), onTap: sfx.tap, onOk: sfx.ok, nextDelay: 600, onMiss: () => { miss++; sfx.no(); },
     onDone: () => later(() => done(miss, L.entries.length), 1000) });
 };
 
