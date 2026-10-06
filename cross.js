@@ -152,11 +152,20 @@
       }
       L.entries.forEach(e => { e.chip.classList.toggle("on", e === cur); e.chip.classList.toggle("done", e.done); });
     }
+    let nextTimer = 0;
     function select(e, c, force) {
+      clearTimeout(nextTimer);
       const changed = e !== cur;
       cur = e;
       paint();
       if ((changed || force) && opt.onSelect) opt.onSelect(e);
+    }
+    // 단어를 맞힌 뒤 다음 단어로 넘어갈 때: 맞힌 단어 소리가 끝난 다음에 새 단어 소리를 낸다 (겹치지 않게)
+    function advance(e) {
+      clearTimeout(nextTimer);
+      cur = e;
+      paint();
+      nextTimer = setTimeout(() => { if (cur === e && !e.done && opt.onSelect) opt.onSelect(e); }, opt.nextDelay || 1600);
     }
     function judge(e) {
       if (e.done || e.cells.some(c => !c.val)) return;
@@ -189,7 +198,7 @@
       if (opt.onTap) opt.onTap();
       c.ents.slice().forEach(judge);
       if (L.entries.every(e => e.done)) { cur = null; paint(); if (opt.onDone) opt.onDone(); return; }
-      if (cur.done) { select(L.entries.find(e => !e.done)); return; }
+      if (cur.done) { advance(L.entries.find(e => !e.done)); return; }
       paint();
     }
     const wrap = el("div", "cxw");
