@@ -119,8 +119,10 @@ const A = "../보물책장/";
 const NEED = 30;
 const SKEY = CFG.id + "-reward-v1";
 const ST = { opened: false, done: {}, eng: {} };
+const PREVIEW = /[?&]preview=1/.test(location.search);                 // 부모님 미리 보기: 열림·읽음을 기록하지 않는다
+if (/[?&]reset=1/.test(location.search)) { try { localStorage.removeItem(SKEY); } catch (e) {} history.replaceState(null, "", location.pathname); }   // ?reset=1 : 이 기기의 책장 기록 지우기
 try { Object.assign(ST, JSON.parse(localStorage.getItem(SKEY) || "{}")); } catch (e) {}
-const keep = () => { try { localStorage.setItem(SKEY, JSON.stringify(ST)); } catch (e) {} };
+const keep = () => { if (PREVIEW) return; try { localStorage.setItem(SKEY, JSON.stringify(ST)); } catch (e) {} };
 
 function h(tag, props, ...kids) {
   const el = document.createElement(tag);
@@ -185,7 +187,7 @@ function shelf() {
         ST.done[id] ? h("a", { class: "btn dark big", href: `#${id}/e/1` }, "🌟 영어만 보고 읽기")
           : h("button", { class: "btn big", disabled: true }, "🔒 영어만 보고 읽기 (한 번 다 읽으면 열려요)"))))),
     h("p", { class: "note", html: "The Tale of Peter Rabbit (1902) · Beatrix Potter &nbsp;|&nbsp; Millions of Cats (1928) · Wanda Gág<br>저작권 보호 기간이 끝난 작품입니다 (출처: Project Gutenberg). 독음은 한글로 옮긴 근사치예요." }));
-  if (!ST.opened) {
+  if (!ST.opened || PREVIEW) {
     ST.opened = true; keep();
     const ov = h("div", { class: "open" }, h("div", { class: "c" }, "🎁"), h("h1", null, "보물 책장이 열렸어요!"), h("p", null, `영어 별 ${STARS}개 달성 · 그림책 2권 획득`),
       h("button", { class: "btn pri big", onclick: () => ov.remove() }, "책 보러 가기 ▶"));
@@ -223,7 +225,7 @@ function reader(id, mode, n) {
 function render() {
   app.innerHTML = "";
   document.querySelectorAll(".open").forEach(o => o.remove());
-  const open = STARS >= NEED || /[?&]preview=1/.test(location.search);   // ?preview=1 : 부모님 미리 보기
+  const open = STARS >= NEED || PREVIEW;
   const m = location.hash.replace(/^#/, "").split("/");
   if (!open) locked();
   else if (BOOKS[m[0]] && (m[1] === "h" || (m[1] === "e" && ST.done[m[0]])) && +m[2] >= 1) reader(m[0], m[1], Math.min(+m[2], BOOKS[m[0]].pages.length + 1));
