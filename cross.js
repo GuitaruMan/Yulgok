@@ -134,7 +134,7 @@
     L.entries.forEach(e => {
       e.chip = el("button", "cxk"); e.chip.type = "button";
       e.chip.append(el("small", null, arrow[e.d] + " " + e.num), opt.chip(e));
-      e.chip.onclick = () => { if (!e.done) select(e); };
+      e.chip.onclick = () => { if (e.done) { if (opt.onSelect) opt.onSelect(e); return; } select(e, null, true); };   // 그림은 누를 때마다 소리
       list.append(e.chip);
     });
     opt.keys.concat("⌫").forEach(k => {
@@ -151,11 +151,11 @@
       }
       L.entries.forEach(e => { e.chip.classList.toggle("on", e === cur); e.chip.classList.toggle("done", e.done); });
     }
-    function select(e, c) {
+    function select(e, c, force) {
       const changed = e !== cur;
       cur = e; pos = c ? e.cells.indexOf(c) : 0;          // 항상 첫 칸부터 차례로 쓴다
       paint();
-      if (changed && opt.onSelect) opt.onSelect(e);
+      if ((changed || force) && opt.onSelect) opt.onSelect(e);
     }
     function judge(e) {
       if (e.done || e.cells.some(c => !c.val)) return;
