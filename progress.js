@@ -31,7 +31,7 @@
     try { Object.assign(S, JSON.parse(localStorage.getItem(localKey) || "{}")); } catch (e) { localOk = false; }
     S.nt = S.nt || {};
     if (typeof S.epoch !== "string") S.epoch = "0";
-    let lastNotes = Object.assign({}, S.notes);
+    let lastNotes = Object.assign({}, S.notes), lastStars = Object.assign({}, S.stars);
     let dirty = false, busy = false, again = false, fails = 0, retryTimer = 0, debounce = 0;
     const show = pill();
 
@@ -55,7 +55,7 @@
         for (const k in srv.best) if (!S.best[k] || srv.best[k] < S.best[k]) S.best[k] = srv.best[k];
         for (const k in srv.notes) if (!(k in S.notes) || (srv.nt[k] || 0) > (S.nt[k] || 0)) { S.notes[k] = srv.notes[k]; S.nt[k] = srv.nt[k] || 0; }
       }
-      lastNotes = Object.assign({}, S.notes);
+      lastNotes = Object.assign({}, S.notes); lastStars = Object.assign({}, S.stars);
       return before !== JSON.stringify(SYNCED.map(k => S[k]));
     }
     async function sync(first) {
@@ -81,6 +81,10 @@
       }
     }
     function save() {
+      // 이 기기에서 별이 오른 활동마다 메모 "+활동.새 별 수" = "그 전 별 수" 를 남긴다.
+      // 메모의 수정 시각(nt)이 곧 별을 딴 때라서, 별 모음판(유정이/별_모음판.html)이 언제 얼마나 땄는지 보여 줄 수 있다.
+      for (const k in S.stars) if (S.stars[k] > (lastStars[k] || 0)) S.notes["+" + k + "." + S.stars[k]] = String(lastStars[k] || 0);
+      lastStars = Object.assign({}, S.stars);
       stamp();
       for (const k in S.notes) if (S.notes[k] !== lastNotes[k]) S.nt[k] = Date.now();
       lastNotes = Object.assign({}, S.notes);

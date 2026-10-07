@@ -117,7 +117,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 <script src="../보물책장/books.js"></script>
 <script>
 "use strict";
-const CFG = {"id": "taeyeon", "kid": "태연이", "keys": ["taeyeon-phonics", "taeyeon-phonics2"], "localKeys": ["taeyeon-phonics-v1", "taeyeon-phonics2-v1"], "phonics": ["영어_파닉스.html", "영어_파닉스2.html"], "back": "../태연이.html"};
+const CFG = {"id": "taeyeon", "kid": "태연이", "keys": ["taeyeon-phonics", "taeyeon-phonics2", "taeyeon-phonics3", "taeyeon-math1", "taeyeon-math2"], "back": "../태연이.html"};
 const A = "../보물책장/";
 const SKEY = CFG.id + "-reward-v1";
 const ST = { opened: {}, done: {}, eng: {} };
@@ -142,15 +142,20 @@ function h(tag, props, ...kids) {
 }
 const sum = o => Object.values(o || {}).reduce((a, b) => a + (+b || 0), 0);
 function localStars(k) { try { return sum((JSON.parse(localStorage.getItem(k) || "{}")).stars); } catch (e) { return 0; } }
-// 영어(파닉스 1·2단계) 별을 모두 더한다. 서버 기록과 이 기기 기록 중 큰 쪽을 쓴다.
+// 아이 페이지(목록)에 있는 모든 학습 페이지의 별을 더한다 — 새 페이지가 생기면 저절로 함께 센다.
+// 서버 기록과 이 기기 기록("이름표-v1") 중 큰 쪽을 쓴다. 목록을 읽지 못하면 만들 때 적어 둔 이름표(CFG.keys)를 쓴다.
 async function countStars() {
-  let total = 0;
-  for (let i = 0; i < CFG.keys.length; i++) {
+  let keys = CFG.keys;
+  try {
+    const doc = new DOMParser().parseFromString(await (await fetch(CFG.back)).text(), "text/html");
+    const found = [...doc.querySelectorAll("[data-key]")].map(a => a.dataset.key);
+    if (found.length) keys = found;
+  } catch (e) {}
+  return sum(await Promise.all(keys.map(async k => {
     let srv = 0;
-    try { const r = await KidsProgress.read(CFG.keys[i]); srv = r ? sum(r.stars) : 0; } catch (e) {}
-    total += Math.max(srv, localStars(CFG.localKeys[i]));
-  }
-  return total;
+    try { const r = await KidsProgress.read(k); srv = r ? sum(r.stars) : 0; } catch (e) {}
+    return Math.max(srv, localStars(k + "-v1"));
+  })));
 }
 function confetti(n) {
   const fx = document.getElementById("fx"), em = ["⭐", "🌟", "✨", "🎉", "📚", "💛"];
@@ -162,7 +167,7 @@ function confetti(n) {
 
 const app = document.getElementById("app");
 let STARS = 0;
-const topbar = (...right) => h("div", { class: "top" }, h("a", { class: "btn", href: CFG.back }, "← " + CFG.kid), h("span", { class: "sp" }), ...right, h("span", { class: "pill" }, `⭐ 영어 별 ${STARS}개`));
+const topbar = (...right) => h("div", { class: "top" }, h("a", { class: "btn", href: CFG.back }, "← " + CFG.kid), h("span", { class: "sp" }), ...right, h("span", { class: "pill" }, `⭐ 별 ${STARS}개`));
 
 const IDS = Object.keys(BOOKS);                       // 열리는 순서(별 적은 책부터)
 const unlocked = id => PREVIEW || STARS >= BOOKS[id].need;
@@ -172,16 +177,16 @@ function locked() {
   app.append(topbar(), h("div", { class: "lock" },
     h("div", { class: "chest" }, "🎁"),
     h("h1", null, "보물 책장이 잠겨 있어요"),
-    h("p", { html: `영어 별을 <b>${first.need - STARS}개</b> 더 모으면 첫 번째 책이 열려요!` }),
+    h("p", { html: `별을 <b>${first.need - STARS}개</b> 더 모으면 첫 번째 책이 열려요!` }),
     gauge(first.need),
     h("div", { class: "peek" }, IDS.map(id => h("div", null, h("img", { src: A + BOOKS[id].cover, alt: "" }), h("span", null, "🔒"), h("em", null, `⭐ ${BOOKS[id].need}개`)))),
     h("p", { style: { marginBottom: "14px" }, html: IDS.map(id => `별 <b>${BOOKS[id].need}개</b> → ${BOOKS[id].ko}`).join(" &nbsp;·&nbsp; ") }),
-    h("div", { class: "go" }, CFG.phonics.map((p, i) => h("a", { class: "btn pri big", href: p }, `${i ? "🚀" : "🔤"} 파닉스 ${i + 1}단계 하러 가기`)))));
+    h("div", { class: "go" }, h("a", { class: "btn pri big", href: CFG.back }, "⭐ 별 모으러 가기"))));
 }
 function shelf() {
   const got = IDS.filter(unlocked), next = IDS.find(id => !unlocked(id));
   app.append(topbar(), h("div", { class: "banner" },
-    h("div", { class: "who" }, `${CFG.kid}가 영어 별을 ${STARS}개나 모았어요!`),
+    h("div", { class: "who" }, `${CFG.kid}가 별을 ${STARS}개나 모았어요!`),
     h("h1", null, got.length === IDS.length ? "🏆 보물 책장을 다 열었어요 🏆" : "🏆 보물 책장이 열렸어요 🏆"),
     h("p", null, next ? `별 ${BOOKS[next].need}개를 모으면 다음 책 「${BOOKS[next].ko}」도 열려요` : "열심히 공부한 사람만 볼 수 있는 특별한 그림책이에요")),
     h("div", { class: "shelf" }, IDS.map(id => {
@@ -189,7 +194,7 @@ function shelf() {
       if (!unlocked(id)) return h("div", { class: "book dim" },
         h("div", { class: "cv" }, h("img", { src: A + b.cover, alt: b.title }), h("span", { class: "lk" }, "🔒")),
         h("h2", null, b.title), h("div", { class: "by" }, b.by), h("div", { class: "ko" }, b.ko),
-        gauge(b.need), h("p", { class: "by", html: `영어 별을 <b>${b.need - STARS}개</b> 더 모으면 열려요` }));
+        gauge(b.need), h("p", { class: "by", html: `별을 <b>${b.need - STARS}개</b> 더 모으면 열려요` }));
       return h("div", { class: "book" },
         ST.eng[id] ? h("span", { class: "medal", title: "영어만으로 끝까지 읽었어요" }, "🥇") : ST.done[id] ? h("span", { class: "medal", title: "끝까지 읽었어요" }, "🎖️") : null,
         h("div", { class: "cv" }, h("img", { src: A + b.cover, alt: b.title })),
@@ -203,7 +208,7 @@ function shelf() {
   const fresh = got.find(id => !ST.opened[id]);          // 새로 열린 책이 있으면 상자가 열리는 연출
   if (fresh) {
     got.forEach(id => { ST.opened[id] = 1; }); keep();
-    const ov = h("div", { class: "open" }, h("div", { class: "c" }, "🎁"), h("h1", null, `「${BOOKS[fresh].ko}」를 얻었어요!`), h("p", null, `영어 별 ${BOOKS[fresh].need}개 달성 · ${BOOKS[fresh].title}`),
+    const ov = h("div", { class: "open" }, h("div", { class: "c" }, "🎁"), h("h1", null, `「${BOOKS[fresh].ko}」를 얻었어요!`), h("p", null, `별 ${BOOKS[fresh].need}개 달성 · ${BOOKS[fresh].title}`),
       h("button", { class: "btn pri big", onclick: () => ov.remove() }, "책 보러 가기 ▶"));
     document.body.append(ov); setTimeout(() => confetti(70), 900);
   }
