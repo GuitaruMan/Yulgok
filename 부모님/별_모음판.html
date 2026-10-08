@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>별 모음판 - Yulgok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+/* 칠판에 분필로 쓴 세로셈(도윤이 + 태연이 = 모두)이 이 페이지의 얼굴이다. 나머지는 조용한 종이 카드.
+   아이 색은 각자 학습 페이지의 색(도윤이 파랑, 태연이 분홍)이고 흰 바탕에서만 쓴다. */
+:root{--board:#2E5A4C;--chalk:#F3F5EC;--wood:#C99B6B;--wood2:#A77E52;
+  --bg:#EDF2EE;--card:#fff;--ink:#1E2B27;--sub:#5E6F69;--line:#D5DFDA;--soft:#F3F7F4;--gold:#FFB020;--sticker:#FFF4D6;
+  --doyun:#2D7FF9;--taeyeon:#F0508A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Gowun Dodum','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#app{max-width:1000px;margin:0 auto;padding:14px 16px 60px}
+.hand{font-family:'Gaegu','Gowun Dodum',sans-serif;font-weight:700}
+.top{display:flex;gap:14px;align-items:center;font-size:.9rem;color:var(--sub);margin-bottom:12px}
+.top a{text-decoration:none}
+.top a:hover{color:var(--ink)}
+.top .sp{flex:1}
+.again{border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:5px 14px;font-size:.85rem}
+.st{display:inline-block;width:12px;height:12px;flex:none;background:var(--kc,var(--gold));
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+
+/* 칠판 */
+.board{background:radial-gradient(ellipse at 18% 22%,rgba(255,255,255,.08),transparent 58%),radial-gradient(ellipse at 84% 78%,rgba(255,255,255,.05),transparent 52%),var(--board);
+  color:var(--chalk);border:10px solid var(--wood);border-radius:16px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),0 6px 0 var(--wood2);padding:16px 22px 18px}
+.board .hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.board h1{font-size:clamp(1.9rem,6vw,2.5rem);line-height:1.1}
+.board .date{font-size:.88rem;opacity:.75;margin-left:auto}
+.sum{display:grid;grid-template-columns:auto auto auto auto;justify-content:center;column-gap:.22em;align-items:baseline;
+  font-size:clamp(3rem,13vw,5rem);line-height:1.06;margin-top:6px}
+.sum .sg{font-size:.72em}
+.sum .nm{font-size:.4em;justify-self:end;margin-right:.5em;opacity:.92}
+.sum .dg{display:grid;grid-auto-flow:column;grid-auto-columns:.56em;justify-content:end;justify-items:center}
+.sum .ln{grid-column:1/-1;height:5px;border-radius:3px;background:var(--chalk);opacity:.85;margin:.06em 0 .02em}
+.sum .big{width:.62em;height:.62em;align-self:center;margin-left:.12em;transform:rotate(-10deg);filter:drop-shadow(0 3px 0 rgba(0,0,0,.25))}
+.sum .w{animation:write .32s both;animation-delay:calc(var(--i)*70ms)}
+@keyframes write{from{opacity:0;transform:translateY(.12em) rotate(-5deg)}}
+.board .ft{display:flex;justify-content:center;gap:8px 22px;flex-wrap:wrap;font-size:1.35rem;margin-top:10px;opacity:.95}
+.board .ft b{color:var(--gold)}
+@media (prefers-reduced-motion:reduce){.sum .w{animation:none}}
+
+/* 종이 카드 */
+.cols{display:grid;gap:16px;margin-top:20px}
+.card{background:var(--card);border-radius:18px;padding:16px;border:1.5px solid var(--line);min-width:0}
+.card h2{font-size:1.55rem;line-height:1.2}
+.note{font-size:.84rem;color:var(--sub);margin-top:10px}
+
+/* 스티커 달력 */
+.calhead{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.calhead .mon{font-size:1.55rem;min-width:6.6em;text-align:center}
+.nav{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);font-size:1.05rem;line-height:1}
+.nav:disabled{opacity:.3;cursor:default}
+.legend{margin-left:auto;display:flex;gap:12px;font-size:.84rem;color:var(--sub)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.wd{text-align:center;font-size:.76rem;color:var(--sub);padding-bottom:2px}
+.day{min-height:62px;border-radius:10px;background:var(--soft);padding:3px 4px 4px;text-align:left;display:flex;flex-direction:column;gap:1px;border:2px solid transparent;font-size:.82rem}
+.day .n{font-size:.74rem;color:var(--sub);align-self:flex-start;padding:0 5px;margin-left:-3px;border-radius:99px}
+.day .r{display:flex;align-items:center;gap:3px;font-weight:700;line-height:1.2}
+.day.has{background:var(--sticker)}
+.day.today .n{background:var(--ink);color:#fff}
+.day.sel{border-color:var(--board)}
+.day.later{opacity:.4}
+.blank{min-height:62px}
+
+/* 고른 날 */
+.dayhd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dayhd .tot{margin-left:auto;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.evs{display:flex;flex-direction:column;margin-top:8px}
+.ev{display:grid;grid-template-columns:1fr auto;gap:0 10px;padding:9px 0;border-top:1px dashed var(--line)}
+.ev .who{display:inline-flex;align-items:center;gap:5px;font-size:.84rem;color:var(--sub)}
+.ev .pg{font-weight:700;grid-column:1}
+.ev .plus{grid-row:1/3;grid-column:2;align-self:center;font-size:1.7rem}
+.ev .tm{grid-column:1/-1;font-size:.8rem;color:var(--sub)}
+.none{color:var(--sub);padding:18px 0 6px}
+
+/* 아이별 */
+.kid .khd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.kid .khd .tot{margin-left:auto;font-size:1.9rem;line-height:1;display:inline-flex;align-items:center;gap:6px}
+.kid .khd .tot .st{width:18px;height:18px}
+.kid .stat{font-size:.86rem;color:var(--sub);margin-top:2px}
+.sec{font-size:.8rem;color:var(--sub);margin-top:14px;letter-spacing:.02em}
+.row{padding:9px 0 8px;border-top:1px dashed var(--line)}
+.sec + .row{border-top:0;padding-top:4px}
+.row a{font-weight:700;text-decoration:none}
+.row a:hover{text-decoration:underline}
+.bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin:6px 0 4px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--kc)}
+.meta{display:flex;justify-content:space-between;gap:10px;font-size:.82rem;color:var(--sub)}
+.meta b{color:var(--ink)}
+.msg{text-align:center;padding:60px 10px;font-size:1.5rem}
+.msg .again{margin-top:14px;font-family:'Gowun Dodum',sans-serif;font-weight:400}
+@media (min-width:820px){
+  .cols{grid-template-columns:1.15fr 1fr}
+  .cols.kids{grid-template-columns:1fr 1fr}
+  .day,.blank{min-height:70px}
+  .day{font-size:.9rem;padding:4px 6px 5px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// 비밀번호를 거치지 않고 주소로 바로 들어오면 부모님 첫 화면으로 보낸다 (부모님.html 이 통과 표시를 남긴다)
+try { if (sessionStorage.getItem("yulgok-parents") !== "1") location.replace("../부모님.html"); } catch (e) { location.replace("../부모님.html"); }
+</script>
+<script src="../progress.js"></script>
+<script>
+"use strict";
+// 별 기록은 아이 학습 페이지와 같은 서버(../progress.js 의 KidsProgress.read)에서 읽기만 한다.
+// 어떤 페이지가 있는지는 아이 목록 페이지(도윤이.html · 태연이.html)의 data-key 타일에서 찾으므로, 새 학습 페이지가 생기면 저절로 들어온다.
+const KIDS = [{ id: "doyun", name: "도윤이", index: "../도윤이.html" }, { id: "taeyeon", name: "태연이", index: "../태연이.html" }];
+const LOG_FROM = "2026년 10월 7일";            // 별을 딴 때를 적기 시작한 날 (그 전에 딴 별은 날짜가 없다)
+const WD = ["일", "월", "화", "수", "목", "금", "토"];
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  if (props) for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "style") for (const s in v) el.style.setProperty(s, v[s]);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(9)) if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(c));
+  return el;
+}
+const app = document.getElementById("app");
+const sum = a => a.reduce((n, x) => n + x, 0);
+const two = n => String(n).padStart(2, "0");
+const dayKey = t => { const d = new Date(t); return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()); };
+const dayText = d => `${d.getMonth() + 1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일`;
+const clock = t => new Date(t).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
+const star = kid => h("i", { class: "st", style: { "--kc": kid ? `var(--${kid.id})` : "var(--gold)" } });
+
+/* ================= 읽기 ================= */
+async function pagesOf(kid) {
+  const url = new URL(kid.index, location.href), res = await fetch(url);
+  if (!res.ok) throw new Error(kid.index);
+  const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+  let sec = "";
+  return [...doc.querySelectorAll("h2.sec, a[data-key]")].map(el => {
+    if (el.tagName === "H2") { sec = el.textContent.trim(); return null; }
+    return { key: el.dataset.key, title: el.querySelector(".t").textContent.trim(), href: new URL(el.getAttribute("href"), url).href, sec };
+  }).filter(Boolean);
+}
+// 별을 딴 때: 학습 페이지가 메모 "+활동.새 별 수" = "그 전 별 수" 를 남기고, 그 메모의 수정 시각이 딴 때다 (progress.js).
+// 두 기기가 같은 활동을 따로 했더라도 별을 두 번 세지 않도록, 활동마다 시간순으로 '새로 오른 만큼'만 센다.
+function gains(rec) {
+  const byAct = {}, out = [];
+  for (const k in rec.notes || {}) {
+    if (k[0] !== "+") continue;
+    const dot = k.lastIndexOf("."), level = +k.slice(dot + 1), t = (rec.nt || {})[k];
+    if (t && level >= 1 && level <= 3) (byAct[k.slice(1, dot)] = byAct[k.slice(1, dot)] || []).push({ t, level, prev: +rec.notes[k] || 0 });
+  }
+  for (const act in byAct) {
+    let top = 0;
+    byAct[act].sort((a, b) => a.t - b.t).forEach(e => { const n = e.level - Math.max(top, e.prev); if (n > 0) out.push({ t: e.t, n }); top = Math.max(top, e.level); });
+  }
+  return out;
+}
+async function load() {
+  return Promise.all(KIDS.map(async kid => {
+    const pages = await pagesOf(kid);
+    await Promise.all(pages.map(async p => {
+      const rec = await KidsProgress.read(p.key) || {};
+      // 학습 페이지가 적어 둔 요약 "딴 별/전체 별"을 따른다 (없앤 활동의 별은 빼고 센 값). 요약이 없으면 별을 그냥 더한다.
+      const note = /^\d+\/\d+$/.test((rec.notes || {})._sum || "") ? rec.notes._sum.split("/").map(Number) : null;
+      p.got = note ? note[0] : sum(Object.values(rec.stars || {}));
+      p.max = note ? note[1] : 0;
+      p.events = gains(rec).map(e => ({ ...e, kid, page: p }));
+      p.last = p.got ? Math.max((rec.nt || {})._sum || 0, ...p.events.map(e => e.t)) : 0;
+    }));
+    const events = pages.flatMap(p => p.events), got = sum(pages.map(p => p.got));
+    return { ...kid, pages, events, got, undated: Math.max(0, got - sum(events.map(e => e.n))) };
+  }));
+}
+
+/* ================= 그리기 ================= */
+let DATA = null, VIEW = null, SEL = null;
+const allEvents = () => DATA.flatMap(k => k.events);
+const since = (events, days) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - days); return sum(events.filter(e => e.t >= d.getTime()).map(e => e.n)); };
+
+function board() {
+  const nums = DATA.map(k => k.got).concat(sum(DATA.map(k => k.got))), wide = String(Math.max(...nums)).length;
+  let i = 0;
+  const digits = n => h("span", { class: "dg" }, [...String(n).padStart(wide, " ")].map(ch => h("span", { class: "w", style: { "--i": i++ } }, ch)));
+  const name = t => h("span", { class: "nm w", style: { "--i": i++ } }, t);
+  const cells = [h("span"), name(DATA[0].name), digits(nums[0]), h("span"),
+    h("span", { class: "sg w", style: { "--i": i++ } }, "+"), name(DATA[1].name), digits(nums[1]), h("span"),
+    h("span", { class: "ln w", style: { "--i": i++ } }),
+    h("span"), name("모두"), digits(nums[2]), h("i", { class: "st big w", style: { "--i": i++ } })];
+  const ev = allEvents();
+  return h("section", { class: "board hand", "aria-label": `${DATA[0].name} ${nums[0]}개, ${DATA[1].name} ${nums[1]}개, 모두 ${nums[2]}개` },
+    h("div", { class: "hd" }, h("h1", null, "별 모음판"), h("span", { class: "date" }, new Date().getFullYear() + "년 " + dayText(new Date()))),
+    h("div", { class: "sum", "aria-hidden": "true" }, cells),
+    h("div", { class: "ft" }, h("span", null, "오늘 딴 별 ", h("b", null, since(ev, 0)), "개"), h("span", null, "최근 7일 ", h("b", null, since(ev, 6)), "개")));
+}
+
+function calendar() {
+  const { y, m } = VIEW, now = new Date(), today = dayKey(now), first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate();
+  const byDay = {};                                  // 날짜 → 아이별 딴 별
+  allEvents().forEach(e => { const d = byDay[dayKey(e.t)] = byDay[dayKey(e.t)] || {}; d[e.kid.id] = (d[e.kid.id] || 0) + e.n; });
+  const move = step => { const d = new Date(y, m + step, 1); VIEW = { y: d.getFullYear(), m: d.getMonth() }; pick(step < 0 ? ".nav" : ".nav + .mon + .nav"); };
+  const cells = WD.map(w => h("div", { class: "wd" }, w)).concat(Array.from({ length: first.getDay() }, () => h("div", { class: "blank" })));
+  for (let d = 1; d <= days; d++) {
+    const key = y + "-" + two(m + 1) + "-" + two(d), got = byDay[key], date = new Date(y, m, d);
+    const label = dayText(date) + (got ? ", " + DATA.filter(k => got[k.id]).map(k => `${k.name} ${got[k.id]}개`).join(", ") : ", 딴 별 없음");
+    cells.push(h("button", { type: "button", class: "day" + (got ? " has" : "") + (key === today ? " today" : "") + (key === SEL ? " sel" : "") + (key > today ? " later" : ""),
+      "aria-label": label, title: label, "aria-pressed": key === SEL ? "true" : "false", onclick: () => { SEL = key; pick(".day.sel"); } },
+      h("span", { class: "n" }, d), got && DATA.filter(k => got[k.id]).map(k => h("span", { class: "r" }, star(k), got[k.id]))));
+  }
+  return h("section", { class: "card" },
+    h("div", { class: "calhead" },
+      h("button", { class: "nav", type: "button", "aria-label": "이전 달", onclick: () => move(-1) }, "‹"),
+      h("h2", { class: "mon hand" }, `${y}년 ${m + 1}월`),
+      h("button", { class: "nav", type: "button", "aria-label": "다음 달", disabled: y === now.getFullYear() && m === now.getMonth(), onclick: () => move(1) }, "›"),
+      h("div", { class: "legend" }, DATA.map(k => h("span", null, star(k), k.name)))),
+    h("div", { class: "cal" }, cells),
+    h("p", { class: "note" }, `별을 딴 날의 칸에 그날 딴 별 수가 붙어요. 날짜는 ${LOG_FROM}부터 적고 있어요.`));
+}
+
+function dayDetail() {
+  const [y, m, d] = SEL.split("-").map(Number), date = new Date(y, m - 1, d);
+  const rows = [];                                   // 아이 · 페이지별로 묶는다
+  DATA.forEach(k => k.pages.forEach(p => {
+    const ev = p.events.filter(e => dayKey(e.t) === SEL);
+    if (ev.length) rows.push({ k, p, n: sum(ev.map(e => e.n)), from: Math.min(...ev.map(e => e.t)), to: Math.max(...ev.map(e => e.t)) });
+  }));
+  rows.sort((a, b) => a.from - b.from);
+  return h("section", { class: "card" },
+    h("div", { class: "dayhd" }, h("h2", { class: "hand" }, dayText(date)), rows.length > 0 && h("span", { class: "tot" }, star(), sum(rows.map(r => r.n)) + "개")),
+    rows.length ? h("div", { class: "evs" }, rows.map(r => h("div", { class: "ev" },
+      h("span", { class: "who" }, star(r.k), r.k.name), h("span", { class: "plus hand" }, "+" + r.n), h("a", { class: "pg", href: r.p.href }, r.p.title),
+      h("span", { class: "tm" }, clock(r.from) === clock(r.to) ? clock(r.from) : clock(r.from) + " ~ " + clock(r.to)))))
+      : h("p", { class: "none" }, allEvents().length ? "이날은 딴 별이 없어요. 달력에서 노란 칸을 눌러 보세요." : "아직 날짜가 적힌 별이 없어요. 아이들이 별을 따면 그날 칸에 붙어요."));
+}
+
+function kidCard(k) {
+  const out = [];
+  let sec = null;
+  k.pages.forEach(p => {
+    if (p.sec !== sec) { sec = p.sec; out.push(h("div", { class: "sec" }, sec)); }
+    const lastDay = p.last && new Date(p.last);
+    out.push(h("div", { class: "row" }, h("a", { href: p.href }, p.title),
+      h("div", { class: "bar" }, h("i", { style: { width: (p.max ? Math.min(100, p.got / p.max * 100) : 0) + "%" } })),
+      h("div", { class: "meta" },
+        h("span", null, h("b", null, p.got), p.max ? " / " + p.max + "개" : "개", p.max && p.got >= p.max ? " · 다 모았어요" : ""),
+        h("span", null, lastDay ? `최근 ${lastDay.getMonth() + 1}월 ${lastDay.getDate()}일` : "아직 별이 없어요"))));
+  });
+  return h("section", { class: "card kid", style: { "--kc": `var(--${k.id})` } },
+    h("div", { class: "khd" }, h("h2", { class: "hand" }, k.name), h("span", { class: "tot hand" }, star(k), k.got)),
+    h("p", { class: "stat" }, `오늘 +${since(k.events, 0)} · 최근 7일 +${since(k.events, 6)}` + (k.undated ? ` · 날짜 없는 별 ${k.undated}개` : "")),
+    out);
+}
+
+let picker = null;
+function render() {
+  app.innerHTML = "";
+  picker = h("div", { class: "cols" });
+  app.append(
+    h("div", { class: "top" }, h("a", { href: "../부모님.html" }, "← 부모님"), h("a", { href: "../index.html" }, "홈으로"), h("span", { class: "sp" }),
+      h("button", { class: "again", type: "button", onclick: start }, "다시 세기")),
+    board(), picker,
+    h("div", { class: "cols kids" }, DATA.map(kidCard)));
+  pick();
+}
+// 달력에서 날이나 달을 바꾸면 달력과 '고른 날'만 다시 그린다 (칠판 글씨는 그대로). 누른 단추에 초점을 돌려준다.
+function pick(focus) {
+  picker.replaceChildren(calendar(), dayDetail());
+  const el = focus && picker.querySelector(focus);
+  if (el && !el.disabled) el.focus();
+}
+function message(text, retry) {
+  app.innerHTML = "";
+  app.append(h("div", { class: "msg hand" }, h("p", null, text), retry && h("button", { class: "again", type: "button", onclick: start }, "다시 불러오기")));
+}
+async function start() {
+  if (!DATA) message("별을 세고 있어요…");
+  try { DATA = await load(); } catch (e) { return message("별 기록을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.", true); }
+  const ev = allEvents();
+  SEL = SEL || dayKey(ev.length ? Math.max(...ev.map(e => e.t)) : Date.now());        // 처음에는 가장 최근에 별을 딴 날과 그 달
+  VIEW = VIEW || { y: +SEL.slice(0, 4), m: SEL.slice(5, 7) - 1 };
+  render();
+}
+start();
+</script>
+</body>
+</html>
