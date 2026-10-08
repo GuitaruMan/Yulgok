@@ -95,6 +95,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   box-shadow:0 6px 0 var(--cd);transition:transform .1s,box-shadow .1s}
 .ac:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--cd)}
 .ac:active{transform:translateY(4px);box-shadow:0 2px 0 var(--cd)}
+.ac.lock,.ac.lock:hover,.ac.lock:active{background:#F1F2F5;border-color:#C9CDD6;box-shadow:0 6px 0 #B4B9C4;transform:none;cursor:default}
+.ac.lock .no{background:#9AA0AD}.ac.lock .t b,.ac.lock .stars{opacity:.5}
 .ac .no{font-family:'Fredoka';font-weight:700;color:#fff;background:var(--c);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
 .ac .e{font-size:1.9rem;flex:none}
 .ac .t{flex:1;min-width:0}
@@ -860,13 +862,16 @@ function home() {
       h("span", { class: "sp" }), reset)
   ].filter(Boolean));
 }
+// 순서 잠금: 앞 번호 활동의 별을 하나라도 따야 다음 번호가 열린다 (게임만 골라 하지 않도록)
+const locked = (st, k) => k > 0 && !S.stars[st.acts[k - 1].id];
 function stage(st) {
   theme(st);
   app.append(topbar(st),
     h("div", { class: "sth" }, h("div", { class: "ico" }, st.icon), h("div", null, h("h1", null, st.no + " · " + st.name, h("em", null, st.en)), h("p", null, st.desc))),
     h("div", { class: "acts" }, st.acts.map((a, k) =>
-      h("a", { class: "ac", href: `#${st.id}/${k + 1}` }, h("span", { class: "no" }, k + 1), h("span", { class: "e" }, a.e),
-        h("span", { class: "t" }, h("b", null, a.title, h("span", { class: "k" }, a.kind)), h("span", null, a.d)), starRow(S.stars[a.id] || 0)))),
+      h(locked(st, k) ? "div" : "a", { class: "ac" + (locked(st, k) ? " lock" : ""), href: !locked(st, k) && `#${st.id}/${k + 1}`, "aria-disabled": locked(st, k) && "true" },
+        h("span", { class: "no" }, k + 1), h("span", { class: "e" }, locked(st, k) ? "🔒" : a.e),
+        h("span", { class: "t" }, h("b", null, a.title, h("span", { class: "k" }, a.kind)), h("span", null, locked(st, k) ? `${k}번을 먼저 해요` : a.d)), starRow(S.stars[a.id] || 0)))),
     h("div", { class: "foot" }, h("a", { class: "btn home", href: "#" }, "🏠 처음 화면으로 돌아가기")));
 }
 function confetti() {
@@ -922,7 +927,7 @@ function render() {
   const m = location.hash.replace(/^#/, "").split("/");
   const st = STAGES.find(s => s.id === m[0]);
   if (!st) home();
-  else if (m[1] && st.acts[m[1] - 1]) activity(st, m[1] - 1);
+  else if (m[1] && st.acts[m[1] - 1] && !locked(st, m[1] - 1)) activity(st, m[1] - 1);
   else stage(st);
   window.scrollTo({ top: 0 });
 }
