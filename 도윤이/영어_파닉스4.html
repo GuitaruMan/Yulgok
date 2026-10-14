@@ -390,7 +390,7 @@ function say(w) {
 // 한글 힌트 (1~3단계와 같은 규칙) + 이번 단계에서 새로 배우는 소리.
 // r이 붙은 모음은 'ㄹ'을 뒤에 붙여 적는다 (아ㄹ · 오ㄹ · 어ㄹ). er ir ur 는 셋 다 '어ㄹ' 한 소리.
 const HK = { a: "애", b: "ㅂ", c: "ㅋ", d: "ㄷ", e: "에", f: "ㅍ", g: "ㄱ", h: "ㅎ", i: "이", j: "ㅈ", k: "ㅋ", l: "ㄹ", m: "ㅁ", n: "ㄴ", o: "아", p: "ㅍ",
-  r: "ㄹ", s: "ㅅ", t: "ㅌ", u: "어", v: "ㅂ", w: "ㅇ", y: "ㅇ", z: "ㅈ", sh: "쉬", ch: "ㅊ", th: "ㅆ", wh: "ㅇ", ll: "ㄹ", pp: "ㅍ", nn: "ㄴ", tt: "ㅌ", ss: "ㅅ", ck: "ㅋ", ng: "ㅇ",
+  r: "ㄹ", s: "ㅅ", t: "ㅌ", u: "어", v: "ㅂ", w: "ㅜ", y: "ㅣ", z: "ㅈ", sh: "쉬", ch: "ㅊ", th: "ㅆ", wh: "ㅜ", ll: "ㄹ", pp: "ㅍ", nn: "ㄴ", tt: "ㅌ", ss: "ㅅ", ck: "ㅋ", ng: "ㅇ",
   ee: "이", ea: "이", ai: "에이", ay: "에이", oa: "오우", oo: "우", igh: "아이",
   ar: "아ㄹ", or: "오ㄹ", er: "어ㄹ", ir: "어ㄹ", ur: "어ㄹ", are: "에어", ear: "이어", ow: "아우", ou: "아우", oi: "오이", oy: "오이", aw: "오", au: "오" };
 const LONG = { a: "에이", i: "아이", o: "오우", u: "유" };       // 마법의 e 앞에서 모음이 내는 긴 소리 (3단계)
@@ -406,7 +406,7 @@ function seg(w, over) {
   return { g, k };
 }
 const hintOf = x => x.k.join(" ");
-const vowTile = (x, i) => isVow(x.g[i]) || (x.g[i] === "y" && x.k[i] !== "ㅇ");                  // 색칠하는 칸: 모음, 모음 노릇 하는 y
+const vowTile = (x, i) => isVow(x.g[i]) || (x.g[i] === "y" && x.k[i] !== "ㅣ");                  // 색칠하는 칸: 모음, 모음 노릇 하는 y
 const wide = (x, i) => x.g[i].length > 1 || (x.k[i] !== MUTE && x.k[i].length > 1);     // 넓은 칸: 여러 글자가 한 소리이거나 힌트가 두 글자
 
 const KO = {   // 단어 카드에 보여 줄 우리말 뜻
@@ -424,7 +424,7 @@ const KO = {   // 단어 카드에 보여 줄 우리말 뜻
   cat: "고양이", bat: "박쥐", hat: "모자", bag: "가방", map: "지도", pan: "프라이팬", cake: "케이크", gate: "대문", lake: "호수", game: "게임", tape: "테이프", wave: "손 흔들다",
   bed: "침대", pen: "펜", hen: "암탉", net: "그물", leg: "다리", ten: "열", bee: "벌", tree: "나무", feet: "발 (두 개)", seed: "씨앗", sheep: "양", green: "초록색",
   pig: "돼지", pin: "핀", lip: "입술", kid: "아이", six: "여섯", zip: "지퍼", bike: "자전거", kite: "연", five: "다섯", nine: "아홉", time: "시간", hide: "숨다",
-  dog: "개", box: "상자", pot: "냄비", fox: "여우", log: "통나무", ox: "황소", bone: "뼈", home: "집", rope: "밧줄", cone: "콘", hole: "구멍", note: "메모",
+  hot: "뜨거운", box: "상자", pot: "냄비", fox: "여우", rock: "바위", ox: "황소", bone: "뼈", home: "집", rope: "밧줄", cone: "콘", hole: "구멍", note: "메모",
   sun: "해", bus: "버스", cup: "컵", bug: "벌레", nut: "땅콩", hut: "오두막", cube: "큐브", cute: "귀여운", tune: "노래 가락"
 };
 const wordOf = (x, s, over) => { const w = x.match(/^[a-z]+/)[0]; return { w, e: x.slice(w.length), s, ...seg(w, over), ko: KO[w] }; };
@@ -454,7 +454,7 @@ const SORT = [
   { t: "애", w: "cat🐱 bat🦇 hat🎩 bag👜 map🗺️ pan🍳" }, { t: "에이", w: "cake🎂 gate🚪 lake🏞️ game🎮 tape📼 wave👋" },
   { t: "에", w: "bed🛏️ pen🖊️ hen🐔 net🥅 leg🦵 ten🔟" }, { t: "이", w: "bee🐝 tree🌳 feet🦶 seed🌱 sheep🐑 green🟢" },
   { t: "이", w: "pig🐷 pin📌 lip👄 kid🧒 six6️⃣ zip🤐" }, { t: "아이", w: "bike🚲 kite🪁 five5️⃣ nine9️⃣ time⏰ hide🙈" },
-  { t: "아", w: "dog🐶 box📦 pot🍲 fox🦊 log🪵 ox🐂" }, { t: "오우", w: "bone🦴 home🏠 rope🪢 cone🍦 hole🕳️ note📝" },
+  { t: "아", w: "hot🔥 box📦 pot🍲 fox🦊 rock🪨 ox🐂" }, { t: "오우", w: "bone🦴 home🏠 rope🪢 cone🍦 hole🕳️ note📝" },
   { t: "어", w: "sun☀️ bus🚌 cup🥤 bug🐛 nut🥜 hut🛖" }, { t: "유", w: "cube🧊 cute🥰 tune🎶" }
 ].map(g => ({ t: g.t, words: g.w.split(" ").map(x => wordOf(x, 0)) }));
 

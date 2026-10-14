@@ -366,9 +366,12 @@ function say(w) {
 /* ================= content ================= */
 // 한글 힌트 (1단계와 같은 규칙) + 두 글자가 한 소리인 것
 const HK = { a: "애", b: "ㅂ", c: "ㅋ", d: "ㄷ", e: "에", f: "ㅍ", g: "ㄱ", h: "ㅎ", i: "이", j: "ㅈ", k: "ㅋ", l: "ㄹ", m: "ㅁ", n: "ㄴ", o: "아", p: "ㅍ",
-  q: "ㅋ", r: "ㄹ", s: "ㅅ", t: "ㅌ", u: "어", v: "ㅂ", w: "ㅇ", x: "ㅋㅅ", y: "ㅇ", z: "ㅈ", sh: "쉬", ch: "ㅊ", th: "ㅆ", ck: "ㅋ", ng: "ㅇ", ll: "ㄹ", ss: "ㅅ" };
+  q: "ㅋ", r: "ㄹ", s: "ㅅ", t: "ㅌ", u: "어", v: "ㅂ", w: "ㅜ", x: "ㅋㅅ", y: "ㅣ", z: "ㅈ", sh: "쉬", ch: "ㅊ", th: "ㅆ", ck: "ㅋ", ng: "ㅇ", ll: "ㄹ", ss: "ㅅ" };
 const seg = w => w.match(/sh|ch|th|ck|ng|ll|ss|[a-z]/g);          // 소리 단위로 자르기: ship → sh·i·p
-const hintOf = w => seg(w).map(g => HK[g]).join(" ");
+// 같은 글자라도 단어에 따라 소리가 다른 것: frog·song·golf 의 o 는 '오' (hot·shop·doll 은 '아')
+const OV = { frog: { o: "오" }, song: { o: "오" }, golf: { o: "오" } };
+const hk = (w, g) => (OV[w] && OV[w][g]) || HK[g];
+const hintOf = w => seg(w).map(g => hk(w, g)).join(" ");
 const VOW = "aeiou";
 
 const KO = {   // 단어 카드에 보여 줄 우리말 뜻
@@ -441,7 +444,7 @@ ENG.wcards = (host, cfg, done) => {
     host.append(h("div", { class: "grp" }, h("span", { class: "vw" }, grp.t), " 단어"));
     const grid = h("div", { class: "wg" });
     grp.words.forEach(x => {
-      const tiles = x.g.map(g => h("button", { class: "tl" + (VOW.includes(g) ? " v" : "") + (g.length > 1 ? " two" : ""), type: "button" }, g, h("small", null, HK[g])));
+      const tiles = x.g.map(g => h("button", { class: "tl" + (VOW.includes(g) ? " v" : "") + (g.length > 1 ? " two" : ""), type: "button" }, g, h("small", null, hk(x.w, g))));
       const card = h("div", { class: "wc" }, h("button", { class: "pe", type: "button", onclick: () => say(x.w) }, x.e, h("span", null, "🔊")), h("div", { class: "ko" }, x.ko), h("div", { class: "tls" }, tiles));
       tiles.forEach(t => t.onclick = () => {
         t.classList.add("on"); sfx.tap();
@@ -502,9 +505,9 @@ ENG.build = (host, cfg, done) => {
     slots[0].classList.add("cur");
     const pool = h("div", { class: "pool" });
     // 함정 글자 2개: 단어에 없고, 단어 속 글자와 한글 힌트(소리)가 겹치지 않는 것
-    const traps = shuffle(allG.filter(g => !toks.includes(g) && !toks.some(t => HK[t] === HK[g]))).slice(0, 2);
+    const traps = shuffle(allG.filter(g => !toks.includes(g) && !toks.some(t => hk(it.w, t) === HK[g]))).slice(0, 2);
     shuffle(toks.concat(traps)).forEach(t => {
-      const b = h("button", { class: "tok", type: "button" }, t, h("small", null, HK[t]));
+      const b = h("button", { class: "tok", type: "button" }, t, h("small", null, hk(it.w, t)));
       b.onclick = () => {
         if (t !== toks[pos]) { miss++; sfx.no(); shakeIt(b); box.classList.add("showhint"); return; }
         slots[pos].textContent = t; slots[pos].classList.remove("cur"); slots[pos].classList.add("fill");

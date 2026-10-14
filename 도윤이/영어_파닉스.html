@@ -355,11 +355,14 @@ const LT = [
   ["A", "애", "apple", "🍎"], ["B", "ㅂ", "ball", "⚽"], ["C", "ㅋ", "cat", "🐱"], ["D", "ㄷ", "dog", "🐶"], ["E", "에", "egg", "🥚"],
   ["F", "ㅍ", "fish", "🐟"], ["G", "ㄱ", "goat", "🐐"], ["H", "ㅎ", "hat", "🎩"], ["I", "이", "insect", "🐞"], ["J", "ㅈ", "juice", "🧃"],
   ["K", "ㅋ", "kite", "🪁"], ["L", "ㄹ", "lion", "🦁"], ["M", "ㅁ", "moon", "🌙"], ["N", "ㄴ", "nut", "🥜"], ["O", "아", "octopus", "🐙"],
-  ["P", "ㅍ", "pig", "🐷"], ["Q", "ㅋ", "queen", "👸"], ["R", "ㄹ", "rabbit", "🐰"], ["S", "ㅅ", "sun", "☀️"], ["T", "ㅌ", "tiger", "🐯"],
-  ["U", "어", "umbrella", "☂️"], ["V", "ㅂ", "van", "🚐"], ["W", "ㅇ", "web", "🕸️"], ["X", "ㅋㅅ", "fox", "🦊"], ["Y", "ㅇ", "yo-yo", "🪀"],
+  ["P", "ㅍ", "pig", "🐷"], ["Q", "ㅋㅜ", "queen", "👸"], ["R", "ㄹ", "rabbit", "🐰"], ["S", "ㅅ", "sun", "☀️"], ["T", "ㅌ", "tiger", "🐯"],
+  ["U", "어", "umbrella", "☂️"], ["V", "ㅂ", "van", "🚐"], ["W", "ㅜ", "web", "🕸️"], ["X", "ㅋㅅ", "fox", "🦊"], ["Y", "ㅣ", "yo-yo", "🪀"],
   ["Z", "ㅈ", "zebra", "🦓"], ["TH", "ㅆ", "thumb", "👍"]
 ].map(([L, k, w, e]) => ({ L, l: L.toLowerCase(), k, w, e }));
 const HK = Object.fromEntries(LT.map(x => [x.l, x.k]));
+// 같은 글자라도 단어에 따라 소리가 다른 것: dog·log 의 o 는 '오' (hot·box 는 '아')
+const OV = { dog: { o: "오" }, log: { o: "오" } };
+const hk = (w, ch) => (OV[w] && OV[w][ch]) || HK[ch];
 const FIRST = LT.filter(x => x.L !== "X");            // fox는 x로 시작하지 않으니 첫소리 게임에서 뺀다
 const markW = x => x.L === "X" ? x.w.replace(/x$/, "<b>x</b>") : "<b>" + x.w.slice(0, x.l.length) + "</b>" + x.w.slice(x.l.length);
 const either = x => Math.random() < .5 ? x.L : x.l;
@@ -402,12 +405,12 @@ function pickPic() {                    // 같은 모음 단어끼리 섞어서 
 function blank() {
   return shuffle(CVC).slice(0, 10).map(x => {
     const p = Math.random() * x.w.length | 0, ch = x.w[p];
-    const pool = (VOWELS.includes(ch) ? VOWELS : CONS).filter(c => HK[c] !== HK[ch]);
+    const pool = (VOWELS.includes(ch) ? VOWELS : CONS).filter(c => HK[c] !== hk(x.w, ch));
     return {
       say: x.w, e: x.e, ko: x.ko,
       word: [...x.w].map((c, k) => k === p ? "<i>&nbsp;</i>" : c).join(""),
       full: [...x.w].map((c, k) => k === p ? `<b>${c}</b>` : c).join(""),
-      opts: [ch].concat(shuffle(pool).slice(0, 2)).map(c => letterOpt(c, HK[c]))
+      opts: [ch].concat(shuffle(pool).slice(0, 2)).map(c => letterOpt(c, c === ch ? hk(x.w, c) : HK[c]))
     };
   });
 }
@@ -467,10 +470,10 @@ ENG.lcards = (host, cfg, done) => {
 
 ENG.wcards = (host, cfg, done) => {
   FAM.forEach(f => {
-    host.append(h("div", { class: "grp" }, h("span", { class: "vw" }, f.v + " " + HK[f.v]), " 소리 단어"));
+    host.append(h("div", { class: "grp" }, h("span", { class: "vw" }, f.v + " " + [...new Set([HK[f.v]].concat(f.words.map(([w]) => hk(w, f.v))))].join(" · ")), " 소리 단어"));
     const grid = h("div", { class: "wg" });
     f.words.forEach(([w, e]) => {
-      const tiles = [...w].map(ch => h("button", { class: "tl" + (ch === f.v ? " v" : ""), type: "button" }, ch, h("small", null, HK[ch])));
+      const tiles = [...w].map(ch => h("button", { class: "tl" + (ch === f.v ? " v" : ""), type: "button" }, ch, h("small", null, hk(w, ch))));
       const card = h("div", { class: "wc" }, h("button", { class: "pe", type: "button", onclick: () => say(w) }, e, h("span", null, "🔊")), h("div", { class: "ko" }, KO[w]), h("div", { class: "tls" }, tiles));
       tiles.forEach(t => t.onclick = () => {
         t.classList.add("on"); sfx.tap();
@@ -643,7 +646,7 @@ ENG.build = (host, cfg, done) => {
     slots[0].classList.add("cur");
     const pool = h("div", { class: "pool" });
     mixed(toks.map((t, k) => ({ t, k }))).forEach(o => {
-      const b = h("button", { class: "tok", type: "button" }, o.t, h("small", null, HK[o.t]));
+      const b = h("button", { class: "tok", type: "button" }, o.t, h("small", null, hk(it.w, o.t)));
       b.onclick = () => {
         if (o.t !== toks[pos]) {
           miss++; sfx.no();
